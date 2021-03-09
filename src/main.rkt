@@ -48,13 +48,65 @@
 
 
 
-
 ; Name : 
 ; Description: 
 ; Inputs:  
 ; Outputs
 (define (mix_deck current_game)
     (cons (shuffle (car current_game)) (cdr current_game)))
+
+
+
+
+
+
+
+
+; Name: 
+; Description: 
+; Inputs:  
+; Outputs:
+(define (aces hand)
+    (cond [(null? hand)
+        0]
+    [(equal? (caar hand) 'A)
+        (+ 1 (aces(cdr hand)))]
+    [else
+        (aces (cdr hand))]))
+
+
+
+; Name: 
+; Description: 
+; Inputs:  
+; Outputs:
+(define (evaluate_hand hand as_value)
+    (+ (evaluate_hand_aux hand) (* as_value (aces hand))))
+
+
+
+
+; Name: 
+; Description: 
+; Inputs:  
+; Outputs:
+(define (evaluate_hand_aux hand)
+    (cond [(null? hand) 
+        0]
+    [(number? (caar hand)) 
+        (+ (caar hand) (evaluate_hand_aux (cdr hand)))]    
+    [(equal? (caar hand) 'J)
+        (+ 12 (evaluate_hand_aux (cdr hand)))]
+    [(equal? (caar hand) 'Q)
+        (+ 13 (evaluate_hand_aux (cdr hand)))]
+    [(equal? (caar hand) 'K)
+        (+ 14 (evaluate_hand_aux (cdr hand)))]
+    [else 
+        (evaluate_hand_aux (cdr hand))]))
+
+(evaluate_hand '((2 Clubs) (A Diamonds) (Q Hearts) (A Spades)) 1)
+
+
 
 
 
@@ -69,13 +121,3 @@
 
 
 
-
-(define aa (list 'Carlos 'Maria 'Jose))
-(define xd (bCEj aa))
-(println xd)
-
-
-
-;(car xd)
-;(caar xd)
-;(caar xd)
