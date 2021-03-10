@@ -53,28 +53,37 @@
 
 (define (get_deck game) (car game))
 
-
-
- 
 (define (get_players game) (cadr game))
-
-
 
 (define (get_crupier game)(caddr game))
 
-
- 
 (define (get_current_player_id game) (cadddr game))
-
-
 
 (define (get_player_id player) (caddr player))
 
+(define (get_player_hand player) (cadr player))
+
+(define (get_player_name player) (cdr player))
+
+(define (get_player_state player) (cadddr player))
+
+(define (take_card game) (caar game))
 
 (define (evaluate_hand hand as_value) (+ (evaluate_hand_aux hand) (* as_value (aces hand))))
 
+(define (update_game deck players crupier current_player) (list deck players crupier current_player))
+
+(define (get_player_by_id game player_id) (get_player_by_id_aux (get_players game) player_id))
 
 
+
+
+(define (get_player_by_id_aux players player)
+    (cond [(null? players) (raise "Player not found")]
+    
+    [(= (get_player_id (car players)) player) (car players)]
+
+    [else (get_player_by_id_aux (cdr players player))]))
 
 
 
@@ -93,12 +102,17 @@
 
 
 
-(define (update_game deck players crupier current_player) (list deck players crupier current_player))
+#|
 
+ Hit 
 
+|#
 
-
-(define (take_card game) (caar game))
+(define (hit game) 
+    (cond [(= (get_current_player_id game) 0) (update_game (cdr (get_deck game)) (get_players game) (add_card game 0 (take_card)) (get_current_player_id game))]
+    
+    [else (update_game (cdr (get_deck game)) (add_card game (get_current_player_id game) (take_card)) (get_crupier game) (get_current_player_id game))]))
+     
 
 
 (define (add hand card)
@@ -121,13 +135,6 @@
 
     [else (add_card_aux (get_players game) player card)]))
 
-
-
-(define (hit game player card) 
-    (cond [(= player 0) (update_game (cdr (get_deck game)) (get_players game) (add_card game player card) (get_current_player_id game))]
-    
-    [else (update_game (cdr (get_deck game)) (add_card game player card) (get_crupier game) (get_current_player_id game))]))
-     
 
 
 
