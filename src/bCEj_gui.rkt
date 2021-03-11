@@ -1,11 +1,16 @@
 #lang racket
 
-(require racket/gui)
+(require racket/gui racket/include)
+(include "bCEj_logic.rkt")
 
 (define players '())
+(define current-game '())
 
 (define (set-players player-list)
     (set! players player-list))
+
+(define (set-current-game player-list)
+    (set! current-game (bCEj player-list)))
 
 (define (place-players players)
     (substring (place-players-aux players) 0 (- (string-length (place-players-aux players)) 2)))
@@ -15,7 +20,7 @@
           [else (string-append (car players) ", " (place-players-aux (cdr players)))]))
 
 ;; Main function
-(define (bCEj . player-list)
+(define (bCEj_gui . player-list)
     (set-players player-list)
     (cond [(null? players) (display "You must enter at least one player's name")]
           [(> (length players) 3) (display "The number of players has been exceeded")]
@@ -58,7 +63,7 @@
 
     (new button% [parent left-panel]
                  [label "Play"]
-                 [callback (λ (b e) (on-play-button b e))])
+                 [callback (λ (b e) (on-play-button b e (send text-field get-value)))])
 
     (new button% [parent right-panel]
                  [label "About"]
@@ -97,10 +102,29 @@
 
     (send about-dialog show #t))
 
+;; Create error window
+(define (error-window msg)
+    (define error-dialog (new dialog% [parent start-window] [label "Error"]))
+    (new message% [parent error-dialog] [label msg])
+    (new button%  [parent error-dialog]
+                  [label "Ok"]
+                  [callback (λ (b e) (send error-dialog show #f) (send start-window show #t))])
+    (send error-dialog show #t))
 
-;; Game window
-(define (on-play-button button event)
+;; Verify text-field entry before start the game
+(define (on-play-button button event player-list)
+    (cond [(null? (string-split player-list #rx",")) (error-window "You must enter at least one player's name")]
+          [(> (length (string-split player-list #rx",")) 3) (error-window "The number of players has been exceeded")]
+          [else (set-current-game (string-split player-list #rx",")) (start-game)]))
+
+;; Create game window
+(define (start-game)
     (send start-window show #f)
+
+    (display current-game)
+
+    (define (initial-interface)
+        (display "\n\nVoy a a gregar las dos cartas del crupier y las dos cartas del primer jugador en la interfaz"))
 
     ; Make a frame to game window
     (define game-window
@@ -161,6 +185,8 @@
     (add-card "10Clubs.png" down-panel)
     (add-card "4Diamonds.png" down-panel)
 
+    (initial-interface)
+
     ; Focusing on the right panel
     (define first-panel
         (new horizontal-panel% [parent right-panel]))
@@ -201,5 +227,5 @@
 )
 
 
-(bCEj "Emanuel" "Carlos")
+(bCEj_gui "Pedro" "Carlos" "Juan")
 
