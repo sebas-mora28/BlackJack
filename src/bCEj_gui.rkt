@@ -135,21 +135,29 @@
 
     ; Focusing on the left panel
     (define rules-panel
-        (new horizontal-panel% [parent left-panel]))
+        (new horizontal-panel% [parent left-panel] [alignment '(center center)]))
 
     (define button-panel
-        (new horizontal-panel% [parent left-panel]))
+        (new horizontal-panel% [parent left-panel] [alignment '(center bottom)] [vert-margin 5]))
+
+    (new message% [parent rules-panel] [label "Rules: \n\nPlace the rules here..."])
+    (new button% [parent button-panel]
+                 [label "Back"]
+                 [callback (λ (b e) (send game-window show #f)
+                                    (send start-window show #t))])
 
     ; Focusing on the center panel
     (define up-panel
         (new horizontal-panel% [parent center-panel] [alignment '(center center)]))
 
+    ; Example
     (add-card "BackBlue.png" up-panel)
     (add-card "ASpades.png" up-panel)
 
     (define down-panel
         (new horizontal-panel% [parent center-panel] [alignment '(center center)]))
 
+    ; Example
     (add-card "10Clubs.png" down-panel)
     (add-card "4Diamonds.png" down-panel)
 
@@ -157,13 +165,36 @@
     (define first-panel
         (new horizontal-panel% [parent right-panel]))
 
+    (define v-first-panel
+        (new vertical-panel% [parent first-panel] [alignment '(right top)] [vert-margin 5] [horiz-margin 5]))
+
+    (new button% [parent v-first-panel] [label "Volume"] [callback (λ (b e) (on-volume-button b e))])
+    (new button% [parent v-first-panel] [label "Play Again"] [callback (λ (b e)  (on-play-aganin-button b e))])
+
     (define second-panel
-        (new horizontal-panel% [parent right-panel]))
+        (new horizontal-panel% [parent right-panel] [alignment '(center center)]))
+
+    (new message% [parent second-panel] [label "Place deck image here..."])
 
     (define third-panel
-        (new horizontal-panel% [parent right-panel]))
+        (new horizontal-panel% [parent right-panel] [alignment '(center bottom)] [spacing 5] [vert-margin 5]))
+
+    (new button% [parent third-panel] [label "Hit"] [callback (λ (b e) (on-hit-button b e))])
+    (new button% [parent third-panel] [label "Stand"] [callback (λ (b e) (on-stand-button b e))])
 
     
+    (define (on-volume-button button event)
+        (display "foo"))
+
+    (define (on-play-aganin-button button event)
+        (display "foo"))
+
+    (define (on-hit-button button event)
+        (display "foo"))
+
+    (define (on-stand-button button event)
+        (display "foo"))
+
     (send game-window show #t))
 
     (send start-window show #t)
