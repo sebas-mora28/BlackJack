@@ -75,9 +75,9 @@
     (define about-pane
         (new pane% [parent about-dialog]))
 
-    ; Starup-background for about window
+    ; Background for about window
     #|(define about-background
-        (new message% [parent star-pane]
+        (new message% [parent about-pane]
                       [label (read-bitmap "foo.png")]))|#
 
     ; About window distribution
@@ -102,8 +102,67 @@
 (define (on-play-button button event)
     (send start-window show #f)
 
+    ; Make a frame to game window
     (define game-window
         (new frame% [parent start-window] [label "BlaCEjack"] [min-width 1000] [min-height 750]))
+
+    ; Functions for game window
+    (define (add-card card place)
+        (new message% [parent place]
+                      [label (read-bitmap (string-append "src/resources/cards/" card))]))
+
+    ; Pane container for game window
+    (define game-pane
+        (new pane% [parent game-window]))
+
+    ; Background for game window
+    #|(define game-background
+        (new message% [parent game-pane]
+                      [label (read-bitmap "foo.png")]))|#
+
+    ; Game window distribution
+    (define game-panel
+        (new horizontal-panel% [parent game-pane]))
+    
+    (define left-panel
+        (new vertical-panel% [parent game-panel]))
+
+    (define center-panel
+        (new vertical-panel% [parent game-panel]))
+
+    (define right-panel
+        (new vertical-panel% [parent game-panel]))
+
+    ; Focusing on the left panel
+    (define rules-panel
+        (new horizontal-panel% [parent left-panel]))
+
+    (define button-panel
+        (new horizontal-panel% [parent left-panel]))
+
+    ; Focusing on the center panel
+    (define up-panel
+        (new horizontal-panel% [parent center-panel] [alignment '(center center)]))
+
+    (add-card "BackBlue.png" up-panel)
+    (add-card "ASpades.png" up-panel)
+
+    (define down-panel
+        (new horizontal-panel% [parent center-panel] [alignment '(center center)]))
+
+    (add-card "10Clubs.png" down-panel)
+    (add-card "4Diamonds.png" down-panel)
+
+    ; Focusing on the right panel
+    (define first-panel
+        (new horizontal-panel% [parent right-panel]))
+
+    (define second-panel
+        (new horizontal-panel% [parent right-panel]))
+
+    (define third-panel
+        (new horizontal-panel% [parent right-panel]))
+
     
     (send game-window show #t))
 
