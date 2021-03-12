@@ -3,27 +3,27 @@
 (require racket/gui racket/include)
 (include "bCEj_logic.rkt")
 
-(define players '())
+(define init-players '())
 (define current-game '())
 
 (define (set-players player-list)
-    (set! players player-list))
+    (set! init-players player-list))
 
 (define (set-current-game player-list)
     (set! current-game (bCEj player-list)))
 
-(define (place-players players)
-    (substring (place-players-aux players) 0 (- (string-length (place-players-aux players)) 2)))
+(define (place-players init-players)
+    (substring (place-players-aux init-players) 0 (- (string-length (place-players-aux init-players)) 2)))
 
-(define (place-players-aux players)
-    (cond [(null? players) ""]
-          [else (string-append (car players) ", " (place-players-aux (cdr players)))]))
+(define (place-players-aux init-players)
+    (cond [(null? init-players) ""]
+          [else (string-append (car init-players) ", " (place-players-aux (cdr init-players)))]))
 
 ;; Main function
 (define (bCEj_gui . player-list)
     (set-players player-list)
-    (cond [(null? players) (display "You must enter at least one player's name")]
-          [(> (length players) 3) (display "The number of players has been exceeded")]
+    (cond [(null? init-players) (display "You must enter at least one player's name")]
+          [(> (length init-players) 3) (display "The number of players has been exceeded")]
           [else (interface)])
     )
 
@@ -59,7 +59,7 @@
     (define text-field
         (new text-field% [parent left-panel]
                          [label "Players name: "]
-                         [init-value (place-players players)]))
+                         [init-value (place-players init-players)]))
 
     (new button% [parent left-panel]
                  [label "Play"]
@@ -123,9 +123,6 @@
 
     (display current-game)
 
-    (define (initial-interface)
-        (display "\n\nVoy a a gregar las dos cartas del crupier y las dos cartas del primer jugador en la interfaz"))
-
     ; Make a frame to game window
     (define game-window
         (new frame% [parent start-window] [label "BlaCEjack"] [min-width 1000] [min-height 750]))
@@ -135,10 +132,22 @@
         (new message% [parent place]
                       [label (read-bitmap (string-append "src/resources/cards/" card))]))
 
+    (define (card-name card-list pos)
+        (string-append (string-join (map ~a (list-ref card-list pos)) "") ".png"))
+
+    (define (init-interface)
+        ; Crupier 
+        (add-card (car (shuffle '("BackBlue.png" "BackGreen.png" "BackRed.png"))) up-panel)
+        (add-card (card-name (cadr (crupier current-game)) 1) up-panel)
+
+        ; First player
+        (add-card (card-name (player_deck (car (players current-game))) 0) down-panel)
+        (add-card (card-name (player_deck (car (players current-game))) 1) down-panel))
+
     ; Pane container for game window
     (define game-pane
         (new pane% [parent game-window]))
-
+        
     ; Background for game window
     #|(define game-background
         (new message% [parent game-pane]
@@ -174,18 +183,10 @@
     (define up-panel
         (new horizontal-panel% [parent center-panel] [alignment '(center center)]))
 
-    ; Example
-    (add-card "BackBlue.png" up-panel)
-    (add-card "ASpades.png" up-panel)
-
     (define down-panel
         (new horizontal-panel% [parent center-panel] [alignment '(center center)]))
 
-    ; Example
-    (add-card "10Clubs.png" down-panel)
-    (add-card "4Diamonds.png" down-panel)
-
-    (initial-interface)
+    (init-interface)
 
     ; Focusing on the right panel
     (define first-panel
