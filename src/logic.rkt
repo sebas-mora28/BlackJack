@@ -86,6 +86,7 @@
 
 
 (define (evaluate_deck player As_value) 
+    (println player)
     (+ (evaluate_deck_aux (player_deck player)) (* As_value (aces (player_deck player)))))
 
 (define (evaluate_deck_aux deck)
@@ -168,7 +169,6 @@
 
 
 (define (start_crupier game_info)
-    (println (evaluate_deck (crupier game_info) 11))
     (cond [(< (evaluate_deck (crupier game_info) 11) 21)
         (cond [(< (evaluate_deck (crupier game_info) 1) 16)
             (start_crupier (hit game_info 0))]
@@ -199,6 +199,23 @@
         (set_initial_cards_aux (hit game_info num_players) (- num_players 1))]))
 
 
+
+(define (game_over? game_info)
+    (cond [(equal? (player_state (crupier game_info)) "playing") #f]
+    
+    [else (game_over?_aux (players game_info))]))
+
+(define (game_over?_aux players)
+    (cond [(null? players) #t]
+    
+    [(equal? (player_state (car players)) "playing") #f]
+    
+    [else
+        (game_over?_aux (cdr players))]))
+
+
+
+
 (define (next_player game_info)
 
     (cond [(= (current_player_id game_info) (length (players game_info)))
@@ -219,5 +236,5 @@
 
 
 (define current_game (bCEj '("Maria" "Juan")))
-(define cr (crupier current_game))
-(start_crupier current_game)
+(define current_player2(current_player current_game))
+(println (evaluate_deck current_player2 1))
