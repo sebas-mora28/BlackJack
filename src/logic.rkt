@@ -210,7 +210,7 @@
         (update_game (deck game_info) 
                  (change_state (players game_info) (current_player_id game_info) "lost") 
                  (crupier game_info) 
-                 (+ (current_player_id game_info) 1)))]))
+                 (+ (current_player_id game_info) 1))]))
 
 
 
