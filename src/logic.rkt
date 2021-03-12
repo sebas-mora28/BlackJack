@@ -86,7 +86,6 @@
 
 
 (define (evaluate_deck player As_value) 
-    (println player)
     (+ (evaluate_deck_aux (player_deck player)) (* As_value (aces (player_deck player)))))
 
 (define (evaluate_deck_aux deck)
@@ -151,7 +150,7 @@
 ;------------------------ stand -----------------------------------------
 
 
-(define (stand game_info id)
+(define (stand game_info id )
     (cond [(= (current_player_id game_info) (length (players game_info)))
         (update_game (deck game_info) 
                      (change_state (players game_info) id "stand") 
@@ -201,22 +200,11 @@
 
 
 (define (game_over? game_info)
-    (cond [(equal? (player_state (crupier game_info)) "playing") #f]
-    
-    [else (game_over?_aux (players game_info))]))
-
-(define (game_over?_aux players)
-    (cond [(null? players) #t]
-    
-    [(equal? (player_state (car players)) "playing") #f]
-    
-    [else
-        (game_over?_aux (cdr players))]))
+    (= (current_player_id game_info) 0)
 
 
 
-
-(define (next_player game_info)
+(define (next_player game_info new_state score) #3
 
     (cond [(= (current_player_id game_info) (length (players game_info)))
         (update_game (deck game_info) 
@@ -236,5 +224,4 @@
 
 
 (define current_game (bCEj '("Maria" "Juan")))
-(define current_player2(current_player current_game))
-(println (evaluate_deck current_player2 1))
+(start_crupier current_game)
