@@ -200,11 +200,11 @@
 
 
 (define (game_over? game_info)
-    (= (current_player_id game_info) 0)
+    (= (current_player_id game_info) 0))
 
 
 
-(define (next_player game_info new_state score) #3
+(define (next_player game_info new_state score) 
 
     (cond [(= (current_player_id game_info) (length (players game_info)))
         (update_game (deck game_info) 
