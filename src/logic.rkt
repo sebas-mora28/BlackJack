@@ -4,12 +4,22 @@
 
 #|
 Nombre: init_crupier
-Descripción: inicializa el crupier.  
-Entradas:
-Salidas:
+
+Descripción: Crea una lista que representa el crupier, esta contiene el nombre, mazo, id, estado y puntaje del crupier.
+Entradas: No tiene entradas.
+Salidas: lista con la información del crupier.
 |#
 (define (init_crupier) (list "crupier" (list ) 0 "playing" 0)) ; nombre : mazo : id : estado : puntaje
 
+
+#|
+Nombre: create_deck
+
+Descripción: Devuelve el mazo conformado por 52 cartas.
+Entradas: No tiene entradas.
+Salidas: Una lista que contiene sublistas que representan cada una de las 52 del mazo.
+
+|#
 
 (define (create_deck)
     (list '(2 "Clubs") '(2 "Diamonds") '(2 "Hearts") '(2 "Spades")
@@ -28,6 +38,14 @@ Salidas:
 
 
 
+#|
+Nombre: lista_players
+Descripción: Forma una lista con sublistas, cada sublista representa a cada uno de los jugadores de la partida conteniendo 
+             su nombre, baraja de cartas representado por una lista, id, estado actual y puntaje. 
+Entradas:
+            * player_names -> lista con los nombres de los jugadores de la partida dados por los usuarios 
+Salidas: lista con sublistas que representan la informacion de los jugadores
+|#
 (define (list_players players_names) (list_players_aux players_names 1))
 
 (define (list_players_aux players_names num_player)
@@ -77,18 +95,37 @@ Salidas:
 ;-------------------------------------------------------------
 
 
+#|
+Nombre: winners
+Descripción: Esta función se encarga de evaluar la situación final del juego y devolver la lista con el ganador, 
+             en caso de que no existan jugadores en juego y el crupier haya perdido, entoces no existe un ganador 
+             y devuelve una lista vacía, si el crupier todavía está en juego entonces agrega al crupier posibles 
+             ganadores junto a los jugadores que todavía están en juego y llama la función auxiliar de winners. 
+             O bien, si el crupier perdió, solamente se llama la función auxiliar del winner pasandole la lista de 
+             posibles ganadores conformada por los jugadores que todavía están en juego.
+Entradas: 
+             * game_info -> lista con la informacion actual de la partida
+Salidas: lista con los ganadores de la partida, en caso de que no existan, retorna una lista vacía
+|#
 (define (winners game_info)
 
     (cond [(and (null? players_in_game (players game_info)) (not (equal? (player_state (crupier game_info)) "stand")))
         '()]
     
     [(equal? (player_state (crupier game_info)) "stand")
-        (winners_aux (add (players game_info) (crupier game_info)))]
+        (winners_aux (add (players_in_game game_info) (crupier game_info)))]
         
     [else
-        (winners_aux (cdr (players game_info)) (list (car (players game_info))))]))
+        (winners_aux (cdr (players_in_game game_info)) (list (car (players_in_game game_info))))]))
 
 
+#|
+Nombre: winner_aux
+Descripción: Esta función se encarga de conformar la lista de ganadores. La lista de ganadores viene por 
+             default con el crupier o el primer 
+Entradas:
+Salidas:
+|#
 (define (winners_aux possible_winners winners)
     (cond [(null? possible_winners) winners]
 
@@ -112,7 +149,7 @@ Salidas:
 (define (players_in_game players)
     (cond [(null? players) '()]
     
-    [(equal? (player_state (car players) "stand")) 
+    [(equal? (player_state (car players)) "stand") 
         (cons (car players) (players_in_game (cdr players)))]
     
     [else (players_in_game (cdr players))]))
