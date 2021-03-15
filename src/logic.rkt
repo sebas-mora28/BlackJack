@@ -1,5 +1,3 @@
-#lang racket
-
 
 
 #|
@@ -122,12 +120,10 @@ Entradas:
 Salidas: lista con los ganadores de la partida, en caso de que no existan, retorna una lista vacía
 |#
 (define (winners game_info)
-
-    (cond [(and (null? (players_in_game (players game_info))) (not (equal? (player_state (crupier game_info)) "stand")))
-        '()]
+    (cond [(and (null? (players_in_game (players game_info))) (not (equal? (player_state (crupier game_info)) "stand"))) '()]
     
     [(equal? (player_state (crupier game_info)) "stand")
-        (winners_aux (cdr (add (players_in_game (players game_info)) (crupier game_info))) (list (car (players_in_game (players game_info)))))]
+        (winners_aux (players_in_game (players game_info)) (list (crupier game_info)))]
         
     [else
         (winners_aux (cdr (players_in_game (players game_info))) (list (car (players_in_game (players game_info)))))]))
@@ -362,17 +358,18 @@ Entradas:
              * game_info -> lista con la información actual de partida.
 Salidas: lista del crupier con la baraja, estado y puntaje actualizado.
 |#
+
 (define (start_crupier game_info)
     (cond   [(> (evaluate_deck (player_deck (crupier  game_info)) 11) 21)
                 (cond   [(> (evaluate_deck (player_deck (crupier  game_info)) 1) 21) 
                                 (update_crupier_score_and_state (crupier game_info) "lost" (evaluate_deck (player_deck (crupier  game_info)) 1))]
 
-                        [(= (evaluate_deck (player_deck (current_player game_info)) 1) 21) 
+                        [(= (evaluate_deck (player_deck (crupier game_info)) 1) 21) 
                                 (update_crupier_score_and_state (crupier game_info) "stand" 21)]
 
                         [else (crupier_next_move game_info (evaluate_deck (player_deck (crupier game_info)) 1))])]
 
-            [(= (evaluate_deck (player_deck (current_player game_info)) 11) 21)
+            [(= (evaluate_deck (player_deck (crupier game_info)) 11) 21)
                (update_crupier_score_and_state (crupier game_info) "stand" 21)]
                
             [else (crupier_next_move game_info (evaluate_deck (player_deck (crupier game_info)) 11))]))
@@ -438,7 +435,6 @@ Entradas:
 Salidas: 
 |#
 (define (next_player game_info new_state score) 
-
     (cond [(= (current_player_id game_info) 0) 
         (list   (player_name (crupier game_info)) 
                 (player_deck (crupier game_info))
@@ -470,8 +466,3 @@ Salidas: lista con la información de la partida.
 (define (bCEj players)
     (set_initial_cards (shuffle_deck (list (create_deck) (list_players  players) (init_crupier) 1))))
 
-
-(bCEj '("Maria" "Juan"))
-
-(define jugadores '(("Pedro" ((6 "Spades") ("K" "Diamonds") ("A" "Hearts")) 1 "lost" 27) (" Carlos" ((2 "Hearts") (10 "Hearts") ("Q" "Clubs")) 2 "lost" 22) (" Juan" (("Q" "Spades") (3 "Diamonds") (4 "Clubs") (10 "Spades")) 3 "lost" 27)))
-(println jugadores)
