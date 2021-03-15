@@ -127,7 +127,7 @@ Salidas: lista con los ganadores de la partida, en caso de que no existan, retor
         '()]
     
     [(equal? (player_state (crupier game_info)) "stand")
-        (winners_aux (cdr (add (players_in_game game_info) (crupier game_info))) (list (car players_in_game game_info)) )]
+        (winners_aux (cdr (add (players_in_game game_info) (crupier game_info))) (list (car (players_in_game game_info)))]
         
     [else
         (winners_aux (cdr (players_in_game game_info)) (list (car (players_in_game game_info))))]))
@@ -471,3 +471,6 @@ Salidas: lista con la información de la partida.
 
 
 (bCEj '("Maria" "Juan"))
+
+(define jugadores '(("Pedro" ((6 "Spades") ("K" "Diamonds") ("A" "Hearts")) 1 "lost" 27) (" Carlos" ((2 "Hearts") (10 "Hearts") ("Q" "Clubs")) 2 "lost" 22) (" Juan" (("Q" "Spades") (3 "Diamonds") (4 "Clubs") (10 "Spades")) 3 "lost" 27)))
+(println jugadores)
