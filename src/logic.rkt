@@ -127,7 +127,7 @@ Salidas: lista con los ganadores de la partida, en caso de que no existan, retor
         '()]
     
     [(equal? (player_state (crupier game_info)) "stand")
-        (winners_aux (cdr (add (players_in_game game_info) (crupier game_info))) (list (car possible_winners)) )]
+        (winners_aux (cdr (add (players_in_game game_info) (crupier game_info))) (list (car players_in_game game_info)) )]
         
     [else
         (winners_aux (cdr (players_in_game game_info)) (list (car (players_in_game game_info))))]))
