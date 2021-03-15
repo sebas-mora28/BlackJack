@@ -32,10 +32,10 @@
           [(> (length init-players) 3) (display "The number of players has been exceeded")]
           [else (interface)]))
 
-;; Graphic interface for blackjack game
+; Graphic interface for blackjack game
 (define (interface)
 
-;; Start window
+; Start window
 (define start-window 
     (new frame% [label "Start window"]
                 [min-width 600]
@@ -50,7 +50,7 @@
         (new message% [parent star-pane]
                       [label (read-bitmap "src/resources/backgrounds/Blackjack-Table.png")]))|#
 
-    ; Star window distribution
+    ; Start window distribution
     (define start-panel
         (new horizontal-panel% [parent star-pane]))
 
@@ -68,15 +68,22 @@
 
     (new button% [parent left-panel]
                  [label "Play"]
-                 [callback (λ (b e) (on-play-button b e (send text-field get-value)))])
+                 [callback (λ (b e) (on-play-button (send text-field get-value)))])
 
     (new button% [parent right-panel]
                  [label "About"]
-                 [callback (λ (b e) (on-about-button b e))])
+                 [callback (λ (b e) (on-about-button))])
+
+; Verify text-field entry before start the game
+(define (on-play-button player-list)
+    (cond [(null? (string-split player-list #rx",")) (error-window "You must enter at least one player's name")]
+          [(> (length (string-split player-list #rx",")) 3) (error-window "The number of players has been exceeded")]
+          [else (set-current-game (string-split player-list #rx",")) (start-game)]))
 
 
-;; Create information window
-(define (on-about-button button event)
+;-------------------------Create information window------------------------
+
+(define (on-about-button)
     ; Dialog container to show some game development information 
     (define about-dialog
         (new dialog% [label "About"] [min-width 400] [min-height 400]))
@@ -107,8 +114,9 @@
 
     (send about-dialog show #t))
 
+;----------------------------Some pop-up menus-------------------------------
 
-;; Create error window
+; Create error window
 (define (error-window msg)
     (define error-dialog (new dialog% [parent start-window] [label "Error"]))
     (new message% [parent error-dialog] [label msg])
@@ -117,42 +125,30 @@
                   [callback (λ (b e) (send error-dialog show #f) (send start-window show #t))])
     (send error-dialog show #t))
     
-;; Verify text-field entry before start the game
-(define (on-play-button button event player-list)
-    (cond [(null? (string-split player-list #rx",")) (error-window "You must enter at least one player's name")]
-          [(> (length (string-split player-list #rx",")) 3) (error-window "The number of players has been exceeded")]
-          [else (set-current-game (string-split player-list #rx",")) (start-game)]))
-
-
-;; Create lost window
+; Create lost window
 (define (lost-window place)
     (define lost-dialog (new dialog% [parent place] [label "You lost"]))
     (new message% [parent lost-dialog] [label "The sum of cards is greater than 21."])
-    ;(sleep 1)
     (new button%  [parent lost-dialog]
                   [label "Ok"]
                   [callback (λ (b e) (send lost-dialog show #f))])
     (send lost-dialog show #t))
 
-
-;; Create automatic stand window
+; Create automatic stand window
 (define (automatic-stand-window place)
     (define auto-stand-dialog (new dialog% [parent place] [label "Automatic stand"]))
     (new message% [parent auto-stand-dialog] [label "The sum of cards equals 21, you may win."])
-    ;(sleep 1)
     (new button% [parent auto-stand-dialog]
                  [label "Ok"]
                  [callback (λ (b e) (send auto-stand-dialog show #f))])
     (send auto-stand-dialog show #t))
 
-
-;; Create stand window
+; Create stand window
 (define (stand-window place player-stand)
     (define stand-dialog (new dialog% [parent place] [label "Stand"]))
     (define v-panel (new vertical-panel% [parent stand-dialog] [alignment '(center center)]))
     (new message% [parent v-panel] [label "Are you sure you want to stand?"])
     (define h-panel (new horizontal-panel% [parent v-panel] [alignment '(center center)]))
-    ;(sleep 1)
     (new button% [parent h-panel]
                  [label "Yes"]
                  [callback (λ (b e) (send stand-dialog show #f) (player-stand))])
@@ -162,7 +158,7 @@
     (send stand-dialog show #t))
     
 
-;; Create game window
+;--------------------------Create game window----------------------------
 (define (start-game)
     (send start-window show #f)
 
@@ -221,10 +217,10 @@
 
     (new message% [parent rules-panel] [label "Rules: \n\nPlace the rules here..."])
 
-    (define button-panel
+    (define bottom-panel
         (new horizontal-panel% [parent left-panel] [alignment '(center bottom)] [vert-margin 5]))
 
-    (new button% [parent button-panel]
+    (new button% [parent bottom-panel]
                  [label "Back"]
                  [callback (λ (b e) (send game-window show #f)
                                     (send start-window show #t))])
@@ -250,9 +246,9 @@
                         [label "As values: "] 
                         [choices (list "A = 11" "A = 1")]
                         [style '(horizontal)]
-                        [callback (λ (b e) (on-radio-box b e))]))
+                        [callback (λ (b e) (on-radio-box))]))
 
-    (define (on-radio-box button event)
+    (define (on-radio-box)
         (cond [(zero? (send radio-box get-selection)) (set-as-value 11)]
               [else (set-as-value 1)]))
 
@@ -292,7 +288,7 @@
 
     (define (on-hit-button button event)
         (set! current-game (hit current-game (current_player_id current-game)))
-        (set! player-score (evaluate_deck (current_player current-game) as-value))
+        (set! player-score (evaluate_deck (player_deck (current_player current-game)) as-value))
 
         (play-sound "src/resources/sounds/cardPlace1.wav" #t)
         (add-card (card-name (player_deck (current_player current-game)) 
@@ -305,22 +301,25 @@
     (define (player-lost)
         (set! current-game (next_player current-game "lost" player-score))
         (lost-window game-window)
-        (cond [(zero? (current_player_id current-game)) (send hit-button enable #f) (send stand-button enable #f) (display "\nAhora juega el crupier")]
+        (cond [(zero? (current_player_id current-game)) (send hit-button enable #f) (send stand-button enable #f) (display "\nAhora juega el crupier") (game_over? current-game) (final-game)]
               [else (send center-panel delete-child current-panel)
                     (send player-label set-label (string-append "Player: " (player_name (current_player current-game))))
                     (new-player (player_name (current_player current-game)))]))
 
     (define (player-auto-stand)
-        (set! current-game (stand current-game (current_player_id current-game)))
+        (set! current-game (stand current-game (current_player_id current-game) player-score))
         (automatic-stand-window game-window)
-        (cond [(zero? (current_player_id current-game)) (send hit-button enable #f) (send stand-button enable #f) (display "\nAhora juega el crupier")]
+        (cond [(zero? (current_player_id current-game)) (send hit-button enable #f) (send stand-button enable #f) (display "\nAhora juega el crupier") (game_over? current-game) (final-game)]
               [else (send center-panel delete-child current-panel)
                     (send player-label set-label (string-append "Player: " (player_name (current_player current-game))))
                     (new-player (player_name (current_player current-game)))]))
 
     (define (player-stand)
-        (set! current-game (stand current-game (current_player_id current-game)))
+        (set! player-score (evaluate_deck (player_deck (current_player current-game)) as-value))
+        (set! current-game (stand current-game (current_player_id current-game) player-score))
+
         (play-sound "src/resources/sounds/dieThrow1.wav" #t)
+
         (cond [(zero? (current_player_id current-game)) (send hit-button enable #f) (send stand-button enable #f) (display "\nAhora juega el crupier")]
               [else (send center-panel delete-child current-panel)
                     (send player-label set-label (string-append "Player: " (player_name (current_player current-game))))
@@ -333,7 +332,13 @@
         (set! current-panel player-name))
 
     (define (final-game)
-        (display "Final game"))
+        (display "\nLista final de los jugadores: ")
+        (display (players current-game))
+        (display "\nMazo del crupier: ")
+        (display (crupier current-game))
+        (display "\nEl los ganadores son:")
+        (display (winners current-game))
+        )
 
 
     (define (on-stand-button button event)
