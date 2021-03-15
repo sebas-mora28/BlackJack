@@ -4,7 +4,9 @@
 Nombre: init_crupier
 
 Descripción: Crea una lista que representa el crupier, esta contiene el nombre, mazo, id, estado y puntaje del crupier.
+
 Entradas: No tiene entradas.
+
 Salidas: lista con la información del crupier.
 |#
 (define (init_crupier) (list "crupier" (list ) 0 "playing" 0)) ; nombre : mazo : id : estado : puntaje
@@ -14,7 +16,9 @@ Salidas: lista con la información del crupier.
 Nombre: create_deck
 
 Descripción: Devuelve el mazo conformado por 52 cartas.
+
 Entradas: No tiene entradas.
+
 Salidas: Una lista que contiene sublistas que representan cada una de las 52 del mazo.
 
 |#
@@ -38,10 +42,12 @@ Salidas: Una lista que contiene sublistas que representan cada una de las 52 del
 
 #|
 Nombre: lista_players
+
 Descripción: Forma una lista con sublistas, cada sublista representa a cada uno de los jugadores de la partida conteniendo 
              su nombre, baraja de cartas representado por una lista, id, estado actual y puntaje. 
-Entradas:
-            * player_names -> lista con los nombres de los jugadores de la partida dados por los usuarios 
+
+Entradas:    * player_names -> lista con los nombres de los jugadores de la partida dados por los usuarios 
+
 Salidas: lista con sublistas que representan la informacion de los jugadores
 |#
 (define (list_players players_names) (list_players_aux players_names 1))
@@ -53,35 +59,183 @@ Salidas: lista con sublistas que representan la informacion de los jugadores
 
 
 
+#|
+Nombre: shuffle_deck
+
+Descripción:  Se encarga de revolver el mazo de cartas mediante la función shuffle propia de Racket. Al momento 
+              de recibir el mazo este se encuentra en orden a como se definió.
+
+Entradas:     * game_info -> lista con la información actual de la partida.
+
+Salidas: lista con la partida actual de la partida actualizada, el mazo de cartas ahora se encuentra revuelto. 
+|#
 (define (shuffle_deck game_info) (cons (shuffle (car game_info)) (cdr game_info)))
 
+
+#|
+Nombre: deck
+
+Descripción:  Devuelve el mazo de cartas de la lista que contiene la información actual de la partida. 
+
+Entradas:     * game_info -> lista con la información actual de la partida.
+
+Salidas: lista que representa el mazo de cartas de la partida.   
+|#
 (define (deck game_info) (car game_info))
 
+
+#|
+Nombre: players 
+
+Descripción:  Devuelve la lista de jugadores de la lista que contiene la información actual de la partida.  
+
+Entradas:     * game_info -> lista con la información actual de la partida.     
+
+Salidas: lista que contiene a cada uno de los jugadorses de la partida. 
+|#
 (define (players game_info) (cadr game_info))
 
+
+#|
+Nombre: crupier
+
+Descripción:  Devuelve el crupier de la lista que contiene la información actual de la partida.   
+
+Entradas:     * game_info -> lista con la información actual de la partida.   
+
+Salidas: lista que representa el crupier. 
+|#
 (define (crupier game_info)(caddr game_info))
 
+
+#|
+Nombre: current_player_id
+
+Descripción: Devuelve el id del jugador que se encuentra jugando en este momento. 
+
+Entradas:    * game_info -> lista con la información actual de la partida.    
+
+Salidas: entero que representa el id del jugador actual.
+|#
 (define (current_player_id game_info) (cadddr game_info))
 
+#|
+Nombre: player_id
+
+Descripción: Devuelve el id de un jugador o crupier. 
+
+Entradas:    * player -> lista que representa a un jugador en específico.    
+
+Salidas: entero que representa el id del jugador. 
+|#
 (define (player_id player) (caddr player))
 
+#|
+Nombre: player_deck
+
+Descripción: Devuelve la lista que representa la baraja de cartas de un jugador.
+
+Entradas:    * player -> lista que representa a un jugador en específico.    
+
+Salidas: lista que representa la barajas de cartas de un jugador. 
+|#
 (define (player_deck player) (cadr player))
 
+#|
+Nombre: player_name
+
+Descripción:  Devuelve el nombre de un jugador 
+
+Entradas:     * player -> lista que representa a un jugador en específico.   
+
+Salidas: string que representa el nombre del jugador. 
+|#
 (define (player_name player) (car player))
 
+#|
+Nombre: player_state
+
+Descripción:  Devuelve el estado de un jugador, si está jugando, se planteó o perdió
+
+Entradas:     * player -> lista que representa a un jugador en específico.  
+
+Salidas: string que representa el estado del jugador.
+|#
 (define (player_state player) (cadddr player))
 
+#|
+Nombre: player_score
+
+Descripción:  Devuelve el puntaje de un jugador. 
+
+Entradas:     * player -> lista que representa a un jugador en específico.  
+
+Salidas: entero que representa el puntaje del jugador.
+|#
 (define (player_score player) (car (cddddr player)))
 
+#|
+Nombre: take_card
+
+Descripción:  Toma una carta del mazo. Como el mazo de encuentra revuelto escoge la primera carta disponible
+              en la lista. 
+
+Entradas:     * deck -> lista que representa el mazo de cartas.
+
+Salidas:      lista que representa una carta. 
+|#
 (define (take_card deck) (car deck))
 
+#|
+Nombre: current_player
+
+Descripción:  Devuelve el jugador que se encuentra jugando en ese momento. Utiliza la función player_by_id
+
+Entradas:     * game_info -> lista con la información actual de la partida.  
+
+Salidas: lista que representa el jugador actual de la partida.
+|#
 (define (current_player game_info) (player_by_id game_info (current_player_id game_info)))
 
+#|
+Nombre: update_game
+
+Descripción: Recibe los diferentes datos que conforman la lista con la información actual de la partida
+             y crea una nueva lista los nuevos valores. 
+
+Entradas:    * deck -> lista que representa el mazo del juego.
+             * players -> lista que representa los jugadores de la partida.
+             * crupier -> lista que representa el crupier.
+             * current_player -> entero que representa el jugador actual de la partida. 
+
+Salidas: lista con la información de la partida actualizada. 
+|#
 (define (update_game deck players crupier current_player) (list deck players crupier current_player))
 
+#|
+Nombre: player_by_id
+
+Descripción:  Busca un jugador en la lista de jugadores por su id. 
+
+Entradas:     * game_info -> lista con la información actual de la partida. 
+              * id -> id del jugador que se desea buscar.
+
+Salidas: lista del jugador que coincide con el id buscado.
+|#
 (define (player_by_id game_info id) (player_by_id_aux (players game_info) id))
 
+#|
+Nombre: player_by_id_aux
 
+Descripción: Función auxiliar de la player_by_id. Se encarga de recorrer la lista de jugadores y 
+             comparar su id con el id buscado. En el momento de encontrarlo, devuelve la lista del 
+             jugador. 
+
+Entradas:   * players -> lista de los jugadores de la partida.
+            * id -> id del jugador que se desea buscar.
+
+Salidas: lista del jugador que coincide con el id buscado. 
+|#
 (define (player_by_id_aux players id)
     (cond [(null? players) (raise "Player not found")]
     
@@ -92,10 +246,12 @@ Salidas: lista con sublistas que representan la informacion de los jugadores
 
 #|
 Nombre: add
+
 Descripción:  Agrega un elemento al final de una lista
-Entradas:
-              * lista -> lista a la cual se desea agrega el elemento 
+
+Entradas:     * lista -> lista a la cual se desea agrega el elemento 
               * elem -> elemento que se desea agregar
+
 Salidas: lista actualizada con el nuevo elemento
 |#
 (define (add lista elem)
@@ -109,14 +265,16 @@ Salidas: lista actualizada con el nuevo elemento
 
 #|
 Nombre: winners
+
 Descripción: Esta función se encarga de evaluar la situación final del juego y devolver la lista con el ganador, 
              en caso de que no existan jugadores en juego y el crupier haya perdido, entoces no existe un ganador 
              y devuelve una lista vacía, si el crupier todavía está en juego entonces agrega al crupier posibles 
              ganadores junto a los jugadores que todavía están en juego y llama la función auxiliar de winners. 
              O bien, si el crupier perdió, solamente se llama la función auxiliar del winner pasandole la lista de 
              posibles ganadores conformada por los jugadores que todavía están en juego.
-Entradas: 
-             * game_info -> lista con la informacion actual de la partida
+
+Entradas:    * game_info -> lista con la informacion actual de la partida
+
 Salidas: lista con los ganadores de la partida, en caso de que no existan, retorna una lista vacía
 |#
 (define (winners game_info)
@@ -131,15 +289,17 @@ Salidas: lista con los ganadores de la partida, en caso de que no existan, retor
 
 #|
 Nombre: winner_aux
+
 Descripción: Esta función se encarga de conformar la lista de ganadores. La lista de ganadores viene por 
              default con el crupier o el primer elemento de la lista de los jugadores en juego. En caso 
              de que el puntaje del primer jugador de la lista de posibles ganadores sea mayor que el primer 
              jugador de la lista de ganadores, entonces se cambia la lista de ganadores. En caso de que tenga 
              el mismo puntaje, se verifica cual de los tiene menos cartas, el que tenga menos será el nuevo 
              ganador y si tiene la misma cantidad habrá un empate. 
-Entradas:
-            * possible_winners -> lista de posibles ganadores de la partida
-            * winners -> lista de ganador o ganadores
+
+Entradas:    * possible_winners -> lista de posibles ganadores de la partida.
+             * winners -> lista de ganador o ganadores.
+
 Salidas: devuelve una lista con el ganador o ganadores.
 |#
 (define (winners_aux possible_winners winners)
@@ -163,10 +323,12 @@ Salidas: devuelve una lista con el ganador o ganadores.
 
 #|
 Nombre: players_in_game
+
 Descripción:  Esta funcion recorre la lista de ganadores buscando aquellos que todavía no hayan perdido,
               es decir, aquellos que tienen como estado "stand" y conforma una lista con estos.
-Entradas:
-              * players -> lista de ganadores
+
+Entradas:     * players -> lista de ganadores.
+
 Salidas: lista con los jugadores que todavía no hayan perdido.
 |#
 (define (players_in_game players)
@@ -184,17 +346,19 @@ Salidas: lista con los jugadores que todavía no hayan perdido.
 
 
 
-; ---------------------------- player ---------------------
+; -------------------------------------------------
 
 #|
 Nombre: update_player_score_and_state 
+
 Descripción:  Esta funcion se encarga de actualizar el estado y el puntaje del jugador. Recorre la lista
               de jugadores, en el momento en que encuentra el jugador indicado, actualiza los valores.
-Entradas:
-              * players -> lista de jugadores
-              * id -> id del jugador al que se desea actualizar los valores
-              * new_state -> nuevo estado del jugador
-              * score -> puntaje del jugador      
+
+Entradas:     * players -> lista de jugadores.
+              * id -> id del jugador al que se desea actualizar los valores.
+              * new_state -> nuevo estado del jugador.
+              * score -> puntaje del jugador. 
+
 Salidas: lista de jugadores actualizada. 
 |#
 (define (update_player_score_and_state players id new_state score)
@@ -217,13 +381,15 @@ Salidas: lista de jugadores actualizada.
 
 #|
 Nombre: evaluate_deck
+
 Descripción:  Esta función se encarga de calcula el valor de las baraja de un jugador, en caso de 
               que se sea un carta con un valor númerico, se suma ese valor. Si es una carta con una
               letra se suma 10 y si es un As se suma el valor que elegió el jugador.
-Entradas:
-              * deck -> baraja de cartas
-              * As_value -> valor del As elegido por el jugador       
-Salidas: un entero indicando el valor de la baraja después de evaluar todas las cartas 
+
+Entradas:     * deck -> baraja de cartas.
+              * As_value -> valor del As elegido por el jugador.  
+
+Salidas: un entero indicando el valor de la baraja después de evaluar todas las cartas.
 |#
 (define (evaluate_deck deck As_value)
     (cond [(null? deck) 0]
@@ -240,13 +406,15 @@ Salidas: un entero indicando el valor de la baraja después de evaluar todas las
 
 #|
 Nombre: hit
+
 Descripción:  Es la función principal de la acción hit. En caso de que el sea crupier el que va 
               a realizar la acción hit se agrega una carta a este mismo y se actuliza la información
               del juego. En caso de que sea un jugador, se agrega la carta al jugador indicado por el id
               y se actualiza la información del juego. 
-Entradas:
-              * game_info -> lista con la información actual de partida.
-              * id -> id del jugaodr que va a realizar la accion hit        
+
+Entradas:     * game_info -> lista con la información actual de partida.
+              * id -> id del jugaodr que va a realizar la accion hit 
+
 Salidas: lista con la información actual de la partida actualizada.
 |#
 (define (hit game_info id) 
@@ -263,10 +431,12 @@ Salidas: lista con la información actual de la partida actualizada.
 
 #|
 Nombre: add_card_to_crupier
+
 Descripción:  Esta función toma una carda del mazo y la agrega a la baraja del crupier  
-Entradas:
-              * deck -> baraja del crupier
-              * crupier -> lista con la informacion del crupier        
+
+Entradas:     * deck -> baraja del crupier.
+              * crupier -> lista con la informacion del crupier.   
+
 Salidas: lista de la información del crupier actualizada con la nueva carta.
 |#
 (define (add_card_to_crupier deck crupier)
@@ -278,15 +448,17 @@ Salidas: lista de la información del crupier actualizada con la nueva carta.
 
 #|
 Nombre: add_card_to_player
+
 Descripción:  Esta función toma una carta del mazo y la agrega a la baraja del jugador indicado por el id.
               Recorre la lista de jugadores buscando el jugador al que se desea agregar la carta, cuando lo 
               encuentra saca una carta del mazo y actualiza su baraja. Conforme recorre la lista va formando
               una nueva con los mismos elementos. 
-Entradas:
-              * deck -> baraja del jugador
-              * players -> lista de jugadores de la partida
-              * id -> id del jugador al que se desea agregar la carta 
-Salidas: lista con jugadores de la partida actualizada
+
+Entradas:     * deck -> baraja del jugador.
+              * players -> lista de jugadores de la partida.
+              * id -> id del jugador al que se desea agregar la carta.
+
+Salidas: lista con jugadores de la partida actualizada.
 |#
 (define (add_card_to_player deck players id)
 
@@ -308,16 +480,18 @@ Salidas: lista con jugadores de la partida actualizada
 
 #|
 Nombre: stand 
+
 Descripción: Esta es la función principal de la funcionalidad stand. Actualiza el puntaje y estado del 
              jugador actual o del crupier a "stand" y pasa al siguiente jugador. En caso de que sea el 
              crupier el que realiza la acción y devuelve la lista de este. En caso de que el id sea del 
              mismo tamaño que la lista de jugadores, quiere decir que ya no existen más jugadores y el
              siguiente en jugar es el crupier. De otra forma, proceso a jugador el jugar el siguiente
              jugador disponible.
-Entradas:
-             * game_info -> lista con la información actual de partida.
-             * id -> id del que realiza la acción stand 
-             * score -> puntaje del que realiza la acción stand
+
+Entradas:    * game_info -> lista con la información actual de partida.
+             * id -> id del que realiza la acción stand. 
+             * score -> puntaje del que realiza la acción stand.
+
 Salidas:    La lista del crupier en caso de que sea este el que realiza la acción, de caso contrario devuelve
             la lista con la información actual de la partida actualizada. 
 |#
@@ -348,14 +522,16 @@ Salidas:    La lista del crupier en caso de que sea este el que realiza la acci�
 
 #|
 Nombre: start_crupier
+
 Descripción: Esta es la función principal de la lógica del crupier. Se encarga de evaluar la mejor
              opción para las jugadas del crupier. Primerament evalúa que valor debe tener el As en
              la bajara de cargas. En caso de que el valor de la baraja sea mayor a 21 ya sea con el 
              As valiendo 1 o 11, quiere decir que el crupier perdió. Una vez que se elige cual es el
              mejor valor para el As, se procede a verificar si la baraja suma 21, en este caso se cambia
              el estado del crupier a stand. Si no suma 21, se llama la función crupier_next_move. 
-Entradas:
-             * game_info -> lista con la información actual de partida.
+
+Entradas:    * game_info -> lista con la información actual de partida.
+
 Salidas: lista del crupier con la baraja, estado y puntaje actualizado.
 |#
 
@@ -377,12 +553,14 @@ Salidas: lista del crupier con la baraja, estado y puntaje actualizado.
 
 #|
 Nombre: crupier_next_move
+
 Descripción:  Esta función complementa la función start_crupier. Se encarga cual debe ser el siguiente 
               moviento del crupier, si la baraja suma más de 17 en ese momento, se decide a realizar 
               la acción "stand". De caso contrario, toma otra carta del mazo realizando la acción hit.
-Entradas:
-              * game_info -> lista con la información actual de la partida
+
+Entradas:     * game_info -> lista con la información actual de la partida
               * score -> puntaje actual de la baraja del crupier 
+
 Salidas: lista del crupier actulizada.
 |#
 (define (crupier_next_move game_info score)
@@ -397,42 +575,67 @@ Salidas: lista del crupier actulizada.
 
 #|
 Nombre: set_initial_cards
-Descripción:  Función principal que se encarga de colocar dos cartas en las barajas del crupier
-Entradas:
-Salidas: 
+
+Descripción:  Función principal que se encarga de colocar dos cartas en las barajas del crupier y de los 
+              jugadores de la partida. Esta función llama dos veces a su auxiliar para obtener el resultado 
+              esperado. 
+
+Entradas:     * game_info -> lista con la información actual de la partida
+
+Salidas: lista con la información de la partida actualizada. 
 |#
 (define (set_initial_cards game_info)
         (set_initial_cards_aux (set_initial_cards_aux game_info (length (players game_info))) (length (players game_info))))
 
 
 #|
-Nombre:
-Descripción:  
-Entradas:
-Salidas: 
+Nombre: set_initial_cards_aux
+
+Descripción:  Función auxiliar de set_initial_cards. Esta función  se encarga de llamarse recursivamente
+              hasta que el id llegue a cero. En cada llamada recursiva realiza la acción hit para el id 
+              actual. 
+
+Entradas:     * game_info -> lista con la información actual de la partida
+              * id -> id del jugador
+
+Salidas: lista con la información actual de la partida actualizada.
 |#
-(define (set_initial_cards_aux game_info num_players)
-    (cond [(= num_players 0)
+(define (set_initial_cards_aux game_info id)
+    (cond [(= id 0)
         (hit game_info 0)]
     [else
-        (set_initial_cards_aux (hit game_info num_players) (- num_players 1))]))
+        (set_initial_cards_aux (hit game_info id) (- id 1))]))
 
 
 #|
-Nombre:
-Descripción:  
-Entradas:
-Salidas: 
+Nombre: game_over? 
+
+Descripción:  Esta función verifica si el juego ya terminó. Como condición para que el juego termine 
+              el jugador actual debe ser 0. 
+
+Entradas:     * game_info -> lista con la información actual de la partida.
+
+Salidas: true en caso de que el juego ya haya terminado, false en caso contrario.
 |#
 (define (game_over? game_info)
     (= (current_player_id game_info) 0))
 
 
 #|
-Nombre:
-Descripción:  
-Entradas:
-Salidas: 
+Nombre: next_player
+
+Descripción:  Esta función se encarga de pasar al siguiente jugador en caso de que el actual haya perdido
+              y devolver la lista con la información del juego actualizada.Si el último de los jugadores 
+              pierde, el siguiente en jugar sería el crupier, por lo cual se llama la función que comienza
+              a aplicar la lógica de este y lo establece como jugador actual. En caso de que el jugador actual
+              sea el crupier, actualiza la lista del crupier y la devuelve, a diferencia de los dos casos anteriores. 
+
+Entradas:     * game_info -> lista con la información actual de la partida.
+              * new_state -> nuevo estado del jugador o crupier.
+              * socre -> puntaje del jugador o crupier.
+        
+Salidas:     lista con la información actual de la partida actualizada, excepto si el jugador actual es el 
+             crupier, si se da este caso, se devuelve la lista del crupier actualizada 
 |#
 (define (next_player game_info new_state score) 
     (cond [(= (current_player_id game_info) 0) 
@@ -457,10 +660,13 @@ Salidas:
 
 #|
 Nombre: bCEj
+
 Descripción:  Función establecida en la especificación del proyecto. Se encarga de llamar todas las funciones
               que inicializa la información de la partida y agrega las primeras dos cartas a los jugadores y 
               al crupier. 
-Entradas: players-> lista con los nombres de los jugadores de la partida
+
+Entradas:     *players-> lista con los nombres de los jugadores de la partida
+
 Salidas: lista con la información de la partida. 
 |#
 (define (bCEj players)
