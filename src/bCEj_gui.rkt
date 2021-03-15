@@ -1,7 +1,7 @@
 #lang racket
 
 (require racket/gui racket/include)
-(include "bCEj_logic.rkt")
+(include "test.rkt")
 
 (define init-players '())
 (define current-game '())
@@ -37,25 +37,23 @@
 
 ; Start window
 (define start-window 
-    (new frame% [label "Start window"]
-                [min-width 600]
-                [min-height 400]))
+    (new frame% [label "Start window"] [min-width 600] [min-height 400]))
     
     ; Pane container for start window
     (define star-pane
         (new pane% [parent start-window]))
 
     ; Starup-background for start window
-    #|(define starup-background
+    (define starup-background
         (new message% [parent star-pane]
-                      [label (read-bitmap "src/resources/backgrounds/Blackjack-Table.png")]))|#
+                      [label (read-bitmap "src/resources/backgrounds/start-bg.jpg")]))
 
     ; Start window distribution
     (define start-panel
         (new horizontal-panel% [parent star-pane]))
 
     (define left-panel
-        (new vertical-panel% [parent start-panel] [alignment '(center center)] [horiz-margin 60]))
+        (new vertical-panel% [parent start-panel] [alignment '(center center)] [horiz-margin 10]))
 
     (define right-panel
         (new vertical-panel% [parent start-panel] [alignment '(right top)] [horiz-margin 5] (vert-margin 5)))
@@ -80,22 +78,23 @@
           [(> (length (string-split player-list #rx",")) 3) (error-window "The number of players has been exceeded")]
           [else (set-current-game (string-split player-list #rx",")) (start-game)]))
 
+;(add-card (card-name (player_deck (current_player current-game)) 0) player-name)           
 
 ;-------------------------Create information window------------------------
 
 (define (on-about-button)
     ; Dialog container to show some game development information 
     (define about-dialog
-        (new dialog% [label "About"] [min-width 400] [min-height 400]))
+        (new dialog% [label "About"] [min-width 210] [min-height 320]))
 
     ; Pane container for about window
     (define about-pane
         (new pane% [parent about-dialog]))
 
     ; Background for about window
-    #|(define about-background
+    (define about-background
         (new message% [parent about-pane]
-                      [label (read-bitmap "foo.png")]))|#
+                      [label (read-bitmap "src/resources/backgrounds/about-bg.jpeg")]))
 
     ; About window distribution
     (define about-panel
@@ -156,7 +155,6 @@
                  [label "No"]
                  [callback (λ (b e) (send stand-dialog show #f))])
     (send stand-dialog show #t))
-    
 
 ;--------------------------Create game window----------------------------
 (define (start-game)
@@ -164,7 +162,7 @@
 
     ; Make a frame to game window
     (define game-window
-        (new frame% [parent start-window] [label "BlaCEjack"] [min-width 1000] [min-height 750]))
+        (new frame% [parent start-window] [label "BlaCEjack"] [min-width 1200] [min-height 800]))
 
     ; Functions for game window
     (define (add-card card place)
@@ -194,9 +192,9 @@
         (new pane% [parent game-window]))
 
     ; Background for game window
-    #|(define game-background
+    (define game-background
         (new message% [parent game-pane]
-                      [label (read-bitmap "foo.png")]))|#
+                      [label (read-bitmap "src/resources/backgrounds/game-bg.jpg")]))
 
     ; Game window distribution
     (define game-panel
@@ -331,6 +329,10 @@
         (add-card (card-name (player_deck (current_player current-game)) 1) player-name)
         (set! current-panel player-name))
 
+    (define (on-stand-button button event)
+        (stand-window game-window player-stand)
+        (cond [(game_over? current-game) (final-game)]))
+
     (define (final-game)
         (display "\nLista final de los jugadores: ")
         (display (players current-game))
@@ -338,12 +340,43 @@
         (display (crupier current-game))
         (display "\nEl los ganadores son:")
         (display (winners current-game))
+        (winner-window (winners current-game))
         )
 
+    ; Create winners window
+    (define (winner-window winner-list)
+        (define winner-dialog (new dialog% [parent game-window] [label "Winner"] [min-width 250] [min-height 150]))
+        (define v-panel (new vertical-panel% [parent winner-dialog] [alignment '(center center)]))
 
-    (define (on-stand-button button event)
-        (stand-window game-window player-stand)
-        (cond [(game_over? current-game) (final-game)]))
+        (cond [(null? winner-list) (new message% [parent v-panel] [label "Anyone's won"] [vert-margin 50])]            
+            [else (place-winner v-panel winner-list)])
+
+        (define h-panel (new horizontal-panel% [parent v-panel] [alignment '(center center)] [vert-margin 5]))
+        (new button% [parent h-panel] [label "Play Again"] [callback (λ (b e) (display "foo"))])
+        (new button% [parent h-panel] [label "Exit"] [callback (λ (b e) (display "foo1"))])
+    
+        (send winner-dialog show #t))
+
+    (define (place-winner panel winner-list)
+        (cond [(not (null? winner-list)) 
+           (place-winner-aux panel (car winner-list)) 
+           (place-winner panel (cdr winner-list))]))
+
+    (define (place-winner-aux panel player)
+        (cond [(equal? (car player) "crupier") 
+           (define (car player) (new horizontal-panel% [parent panel] [alignment '(center center)] [horiz-margin 20]))
+           (new message% [parent (car player)] [vert-margin 5] [label (string-append "\n" (~a (player_name player)) " win, score: " (~a (player_score player)) "\n")])
+           (place-cards (car player) (player_deck player) 0)]
+        
+          [else (define (car player) (new horizontal-panel% [parent panel] [alignment '(center center)] [horiz-margin 20]))
+           (new message% [parent (car player)] [label (string-append "\n" (~a (player_name player)) " win, score: " (~a (player_score player)) "\n")])
+           (place-cards (car player) (player_deck player) 0)]))
+
+    (define (place-cards panel deck n-cards)
+        (cond [(not (equal? n-cards (length deck)))
+           (add-card (card-name deck n-cards) panel)
+           (place-cards panel deck (+ n-cards 1))]))
+
 
     (send game-window show #t))
 
