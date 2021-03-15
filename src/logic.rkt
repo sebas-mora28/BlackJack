@@ -127,10 +127,10 @@ Salidas: lista con los ganadores de la partida, en caso de que no existan, retor
         '()]
     
     [(equal? (player_state (crupier game_info)) "stand")
-        (winners_aux (cdr (add (players_in_game game_info) (crupier game_info))) (list (car (players_in_game game_info)))]
+        (winners_aux (cdr (add (players_in_game (players game_info)) (crupier game_info))) (list (car (players_in_game (players game_info)))))]
         
     [else
-        (winners_aux (cdr (players_in_game game_info)) (list (car (players_in_game game_info))))]))
+        (winners_aux (cdr (players_in_game (players game_info))) (list (car (players_in_game (players game_info)))))]))
 
 
 #|
@@ -208,7 +208,8 @@ Salidas: lista de jugadores actualizada.
         (cons (list (player_name (car players)) (player_deck (car players)) (player_id (car players)) new_state score) 
         (update_player_score_and_state (cdr players) id new_state score)) ]
         
-    [else (cons (car players) (update_player_score_and_state (cdr players) id new_state score))]))
+    [else 
+        (cons (car players) (update_player_score_and_state (cdr players) id new_state score))]))
 
 
 (define (update_crupier_score_and_state crupier new_state score) 
