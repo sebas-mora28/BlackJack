@@ -264,7 +264,7 @@
         (new vertical-panel% [parent first-panel] [alignment '(right top)] [vert-margin 5] [horiz-margin 5]))
 
     (new button% [parent v-first-panel] [label "Volume"] [callback (λ (b e) (on-volume-button b e))])
-    (new button% [parent v-first-panel] [label "Play Again"] [callback (λ (b e)  (on-play-again-button b e))])
+    (new button% [parent v-first-panel] [label "Play Again"] [callback (λ (b e)  (on-play-again-button))])
 
     (define second-panel
         (new horizontal-panel% [parent right-panel] [alignment '(center center)]))
@@ -280,9 +280,9 @@
     (define (on-volume-button button event)
         (display "foo"))
 
-    (define (on-play-again-button button event)
+    (define (on-play-again-button)
         (send game-window show #f)
-        (start-game))
+        (interface))
 
     (define (on-hit-button button event)
         (set! current-game (hit current-game (current_player_id current-game)))
@@ -352,8 +352,8 @@
             [else (place-winner v-panel winner-list)])
 
         (define h-panel (new horizontal-panel% [parent v-panel] [alignment '(center center)] [vert-margin 5]))
-        (new button% [parent h-panel] [label "Play Again"] [callback (λ (b e) (display "foo"))])
-        (new button% [parent h-panel] [label "Exit"] [callback (λ (b e) (display "foo1"))])
+        (new button% [parent h-panel] [label "Play Again"] [callback (λ (b e) (send winner-dialog show #f) (on-play-again-button))])
+        (new button% [parent h-panel] [label "Exit"] [callback (λ (b e) (send winner-dialog show #f) (send game-window show #f))])
     
         (send winner-dialog show #t))
 
