@@ -1,5 +1,6 @@
 
 
+
 #|
 Nombre: init_crupier
 
@@ -342,10 +343,6 @@ Salidas: lista con los jugadores que todavía no hayan perdido.
 
 
 
-
-
-
-
 ; -------------------------------------------------
 
 #|
@@ -373,7 +370,7 @@ Salidas: lista de jugadores actualizada.
 
 
 (define (update_crupier_score_and_state crupier new_state score) 
-        (list (player_name crupier) (player_deck crupier) (player_id crupier) new_state score))
+        (list (player_name crupier) (player_deck crupier) 0 new_state score))
 
 
 ;---------------------------- evaluate deck ----------------------------------------------------------------
@@ -426,7 +423,8 @@ Salidas: lista con la información actual de la partida actualizada.
     [else 
         (update_game (cdr (deck game_info)) 
                      (add_card_to_player (deck game_info) (players game_info) id) 
-                     (crupier game_info) (current_player_id game_info))]))
+                     (crupier game_info) 
+                     (current_player_id game_info))]))
      
 
 #|
@@ -441,8 +439,9 @@ Salidas: lista de la información del crupier actualizada con la nueva carta.
 |#
 (define (add_card_to_crupier deck crupier)
     (list (player_name crupier) 
-          (add (player_deck crupier)   
-          (take_card deck)) 0 (player_state crupier)
+          (add (player_deck crupier)(take_card deck)) 
+          0 
+          (player_state crupier)
           (player_score crupier)))
 
 
@@ -496,14 +495,10 @@ Salidas:    La lista del crupier en caso de que sea este el que realiza la acci�
             la lista con la información actual de la partida actualizada. 
 |#
 (define (stand game_info id score)
-    (cond [(= (current_player_id game_info)  0) 
-        (list   (player_name (crupier game_info)) 
-                (player_deck (crupier game_info))
-                id
-                "stand"
-                score)]  
+    (cond [(= id 0) 
+        (update_crupier_score_and_state (crupier game_info) "stand" score)]  
     
-    [(=  (current_player_id game_info) (length (players game_info)))
+    [(=  id (length (players game_info)))
         (update_game (deck game_info) 
                 (update_player_score_and_state (players game_info) id "stand" score) 
                 (start_crupier game_info) 
@@ -564,8 +559,8 @@ Entradas:     * game_info -> lista con la información actual de la partida
 Salidas: lista del crupier actulizada.
 |#
 (define (crupier_next_move game_info score)
-    (cond [(> score 17) 
-        (update_crupier_score_and_state (crupier game_info) "stand" score)]
+    (cond [(>= score 17) 
+        (stand game_info 0 score)]
     
     [else
         (start_crupier (hit game_info 0))]))
@@ -671,4 +666,6 @@ Salidas: lista con la información de la partida.
 |#
 (define (bCEj players)
     (set_initial_cards (shuffle_deck (list (create_deck) (list_players  players) (init_crupier) 1))))
+
+
 
