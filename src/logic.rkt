@@ -1,4 +1,4 @@
-
+#lang racket
 
 
 #|
@@ -264,63 +264,31 @@ Salidas: lista actualizada con el nuevo elemento
 ;-------------------------------------------------------------
 
 
-#|
-Nombre: winners
 
-Descripción: Esta función se encarga de evaluar la situación final del juego y devolver la lista con el ganador, 
-             en caso de que no existan jugadores en juego y el crupier haya perdido, entoces no existe un ganador 
-             y devuelve una lista vacía, si el crupier todavía está en juego entonces agrega al crupier posibles 
-             ganadores junto a los jugadores que todavía están en juego y llama la función auxiliar de winners. 
-             O bien, si el crupier perdió, solamente se llama la función auxiliar del winner pasandole la lista de 
-             posibles ganadores conformada por los jugadores que todavía están en juego.
-
-Entradas:    * game_info -> lista con la informacion actual de la partida
-
-Salidas: lista con los ganadores de la partida, en caso de que no existan, retorna una lista vacía
-|#
-(define (winners game_info)
-    (cond [(and (null? (players_in_game (players game_info))) (not (equal? (player_state (crupier game_info)) "stand"))) '()]
-    
-    [(equal? (player_state (crupier game_info)) "stand")
-        (winners_aux (players_in_game (players game_info)) (list (crupier game_info)))]
-        
-    [else
-        (winners_aux (cdr (players_in_game (players game_info))) (list (car (players_in_game (players game_info)))))]))
-
-
-#|
-Nombre: winner_aux
-
-Descripción: Esta función se encarga de conformar la lista de ganadores. La lista de ganadores viene por 
-             default con el crupier o el primer elemento de la lista de los jugadores en juego. En caso 
-             de que el puntaje del primer jugador de la lista de posibles ganadores sea mayor que el primer 
-             jugador de la lista de ganadores, entonces se cambia la lista de ganadores. En caso de que tenga 
-             el mismo puntaje, se verifica cual de los tiene menos cartas, el que tenga menos será el nuevo 
-             ganador y si tiene la misma cantidad habrá un empate. 
-
-Entradas:    * possible_winners -> lista de posibles ganadores de la partida.
-             * winners -> lista de ganador o ganadores.
-
-Salidas: devuelve una lista con el ganador o ganadores.
-|#
-(define (winners_aux possible_winners winners)
-    (cond [(null? possible_winners) winners]
-
-    [(> (player_score (car possible_winners)) (player_score (car winners)))
-            (winners_aux (cdr possible_winners) (list (car possible_winners)))]
-
-    [(= (player_score (car possible_winners)) (player_score (car winners)))
-        (cond [(= (length (player_deck (car possible_winners))) (length (player_deck (car winners))))
-                (winners_aux (cdr possible_winners) (add winners (car possible_winners)))]
+(define (game_positions game_info)
+    (cond [(equal? (player_state (crupier game_info)) "stand")
+            (println "entra 1")
+            (println (append (players_in_game (players game_info)) (list (crupier game_info))))
+            (append (ord_possible_winners (append (players_in_game (players game_info)) (list (crupier game_info)))) (ord_losers (losers (players game_info))))]
             
-            [(< (length (player_deck (car possible_winners))) (length (player_deck (car winners))))
-                (winners_aux (cdr possible_winners) (list (car possible_winners)))]
-        
         [else
-            (winners_aux (cdr possible_winners) winners)])]
-    [else
-        (winners_aux (cdr possible_winners) winners)]))
-    
+            (println "entra 2")
+            (append (ord_possible_winners (players_in_game (players game_info))) (ord_losers (losers (append (players game_info) (list (crupier game_info))))))]))
+
+
+(define (ord_possible_winners possibles_winners)
+    (println possibles_winners)
+    (println "entra 3")
+    (reverse (quicksort_ (reverse (quicksort_cartas possibles_winners)))))
+
+
+(define (ord_losers losers)
+    (println losers)
+    (println "entra 4")
+    (quicksort_ losers))
+
+
+
 
 #|
 Nombre: players_in_game
@@ -339,6 +307,71 @@ Salidas: lista con los jugadores que todavía no hayan perdido.
         (cons (car players) (players_in_game (cdr players)))]
     
     [else (players_in_game (cdr players))]))
+
+
+
+
+(define (losers players)
+    (cond [(null? players) '()]
+    
+    [(equal? (player_state (car players)) "lost") 
+        (cons (car players) (losers (cdr players)))]
+    
+    [else (losers (cdr players))]))
+
+
+
+(define (menor_que pivote lista)
+  (cond [(null? lista) '()]
+  
+  [(>= (player_score (car lista)) (player_score pivote)) (menor_que pivote (cdr lista))]
+  
+  [else 
+    (cons (car lista) (menor_que pivote (cdr lista)))]))
+
+
+(define (menor_que_cartas pivote lista)
+  (cond [(null? lista) '()]
+  
+  [(>= (length (player_deck (car lista))) (length (player_deck pivote))) (menor_que_cartas pivote (cdr lista))]
+  
+  [else 
+    (cons (car lista) (menor_que_cartas pivote (cdr lista)))]))
+
+
+;Funcion que devuelve una lista con aquellos elementos que son mayor que el pivote dado 
+(define (mayor_que pivote lista)
+  (cond [(null? lista) '()]
+  
+  [(< (player_score (car lista)) (player_score pivote)) (mayor_que pivote (cdr lista))]
+
+  [else 
+    (cons (car lista) (mayor_que pivote (cdr lista)))]))
+
+(define (mayor_que_cartas pivote lista)
+  (cond [(null? lista) '()]
+  
+  [(< (length (player_deck (car lista))) (length (player_deck pivote))) (mayor_que_cartas pivote (cdr lista))]
+  [else 
+    (cons (car lista) (mayor_que_cartas pivote (cdr lista)))]))
+
+    
+
+;Funcion quicksort, devuelve la lista con los elementos ordenados
+(define (quicksort_ lista)
+  (cond [ (null? lista) '()]
+  [else
+    (append (quicksort_ (menor_que (car lista) (cdr lista))) 
+            (list (car lista)) 
+            (quicksort_ (mayor_que (car lista) (cdr lista))))]))
+
+
+(define (quicksort_cartas lista)
+  (cond [ (null? lista) '()]
+  [else
+    (append (quicksort_cartas (menor_que_cartas (car lista) (cdr lista))) 
+            (list (car lista)) 
+            (quicksort_cartas (mayor_que_cartas (car lista) (cdr lista))))]))
 
 
 
@@ -666,6 +699,4 @@ Salidas: lista con la información de la partida.
 |#
 (define (bCEj players)
     (set_initial_cards (shuffle_deck (list (create_deck) (list_players  players) (init_crupier) 1))))
-
-
 
