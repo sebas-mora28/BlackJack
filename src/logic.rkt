@@ -1,4 +1,4 @@
-#lang racket
+
 
 
 #|
@@ -264,28 +264,54 @@ Salidas: lista actualizada con el nuevo elemento
 ;-------------------------------------------------------------
 
 
+#|
+Nombre: game_positions
 
+Descripción:  Esta función se encarga de devolver la tabla de posiciones del juego una vez que este haya termiando. 
+              Primeramente verifica si el estado del crupier, para agregarlo a la lista de posibles ganadadores, en caso de 
+              que el crupier haya perdido se agrega a la lista de perdedores. 
+
+Entradas:     * game_info -> lista con la información de la partida.
+
+Salidas: lista con la tabla de posiciones. 
+|#
 (define (game_positions game_info)
     (cond [(equal? (player_state (crupier game_info)) "stand")
-            (println "entra 1")
-            (println (append (players_in_game (players game_info)) (list (crupier game_info))))
             (append (ord_possible_winners (append (players_in_game (players game_info)) (list (crupier game_info)))) (ord_losers (losers (players game_info))))]
             
         [else
-            (println "entra 2")
             (append (ord_possible_winners (players_in_game (players game_info))) (ord_losers (losers (append (players game_info) (list (crupier game_info))))))]))
 
 
+
+#|
+Nombre: ord_possible_winners
+
+Descripción:  Esta función ordena la lista de posibles ganadores. Utiliza el método quicksort. 
+              Primero se ordenan los jugadores por la cantidad de cartas y se aplica la función reverse, 
+              luego, se ordenan los jugadores por su cantidad de puntos para finalmente volver a aplicar
+              la función reverse.
+
+Entradas:     * possibles_winners -> lista con los posibles ganadores de la partida
+
+Salidas: lista actualizada con el nuevo elemento
+|#
 (define (ord_possible_winners possibles_winners)
-    (println possibles_winners)
-    (println "entra 3")
-    (reverse (quicksort_ (reverse (quicksort_cartas possibles_winners)))))
+    (reverse (orden_by_score (reverse (orden_by_amount_cards possibles_winners)))))
 
 
+
+#|
+Nombre: ord_losers
+
+Descripción:  Esta función ordena. Utiliza el método quicksort. 
+
+Entradas:     * losers -> lista con los jugadores que perdieron durante la partida. 
+
+Salidas: lista actualizada con el nuevo elemento
+|#
 (define (ord_losers losers)
-    (println losers)
-    (println "entra 4")
-    (quicksort_ losers))
+    (orden_by_score losers))
 
 
 
@@ -310,7 +336,16 @@ Salidas: lista con los jugadores que todavía no hayan perdido.
 
 
 
+#|
+Nombre: losers
 
+Descripción:  Esta funcion recorre la lista de perdedores buscando aquellos que ya perdieron,
+              es decir, aquellos que tienen como estado "lost" y conforma una lista con estos.
+
+Entradas:     * players -> lista de perdedores.
+
+Salidas: lista con los jugadores perdieron.
+|#
 (define (losers players)
     (cond [(null? players) '()]
     
@@ -321,57 +356,116 @@ Salidas: lista con los jugadores que todavía no hayan perdido.
 
 
 
-(define (menor_que pivote lista)
-  (cond [(null? lista) '()]
+#|
+Nombre: less_than_score
+
+Descripción:  Esta función busca los jugadores que tienen un puntaje menor que el pivote
+
+Entradas:     * players -> lista jugadores, puede estar incluido el crupier.
+
+Salidas: lista con los jugadores que tienen un puntaje menor que el pivote.
+|#
+(define (less_than_score pivot players)
+  (cond [(null? players) '()]
   
-  [(>= (player_score (car lista)) (player_score pivote)) (menor_que pivote (cdr lista))]
+  [(>= (player_score (car players)) (player_score pivot)) (less_than_score pivot (cdr players))]
   
   [else 
-    (cons (car lista) (menor_que pivote (cdr lista)))]))
+    (cons (carplayers) (less_than_score pivot (cdr players)))]))
 
+#|
+Nombre: less_than_cards
 
-(define (menor_que_cartas pivote lista)
-  (cond [(null? lista) '()]
+Descripción:  Esta función busca los jugadores que tienen una cantidad de cartas menor que el pivote
+
+Entradas:     * players -> lista jugadores, puede estar incluido el crupier.
+
+Salidas: lista con los jugadores que tienen una cantidad de cartas menor que el pivote.
+|#
+(define (less_than_cards pivot players)
+  (cond [(null? players) '()]
   
-  [(>= (length (player_deck (car lista))) (length (player_deck pivote))) (menor_que_cartas pivote (cdr lista))]
+  [(>= (length (player_deck (car lista))) (length (player_deck pivot))) (less_than_cards pivot (cdr players))]
   
   [else 
-    (cons (car lista) (menor_que_cartas pivote (cdr lista)))]))
+    (cons (car players) (less_than_cards pivot (cdr players)))]))
 
 
-;Funcion que devuelve una lista con aquellos elementos que son mayor que el pivote dado 
-(define (mayor_que pivote lista)
-  (cond [(null? lista) '()]
+
+
+#|
+Nombre: greater_than_score
+
+Descripción:  Esta función busca los jugadores que tienen un mayor puntaje que el pivote
+
+Entradas:     * players -> lista jugadores, puede estar incluido el crupier.
+
+Salidas: lista con los jugadores que tienen un mayor puntaje que el pivote.
+|#
+(define (greater_than_score pivot players)
+  (cond [(null? players) '()]
   
-  [(< (player_score (car lista)) (player_score pivote)) (mayor_que pivote (cdr lista))]
+  [(< (player_score (car players)) (player_score pivot)) (greater_than_score pivot (cdr players))]
 
   [else 
-    (cons (car lista) (mayor_que pivote (cdr lista)))]))
+    (cons (car players) (greater_than_score pivot (cdr players)))]))
 
-(define (mayor_que_cartas pivote lista)
-  (cond [(null? lista) '()]
+
+#|
+Nombre: greater_than_cards
+
+Descripción:  Esta función busca los jugadores que tienen una mayor cantidad de cartas que el pivote
+
+Entradas:     * players -> lista jugadores, puede estar incluido el crupier.
+
+Salidas: lista con los jugadores que tienen una mayor cantidad de cartas que el pivote.
+|#
+(define (greater_than_cards pivot players)
+  (cond [(null? players) '()]
   
-  [(< (length (player_deck (car lista))) (length (player_deck pivote))) (mayor_que_cartas pivote (cdr lista))]
+  [(< (length (player_deck (car players))) (length (player_deck pivot))) (greater_than_cards pivot (cdr players))]
   [else 
-    (cons (car lista) (mayor_que_cartas pivote (cdr lista)))]))
+    (cons (car players) (greater_than_cards pivot (cdr players)))]))
 
     
 
-;Funcion quicksort, devuelve la lista con los elementos ordenados
-(define (quicksort_ lista)
-  (cond [ (null? lista) '()]
-  [else
-    (append (quicksort_ (menor_que (car lista) (cdr lista))) 
-            (list (car lista)) 
-            (quicksort_ (mayor_que (car lista) (cdr lista))))]))
 
 
-(define (quicksort_cartas lista)
-  (cond [ (null? lista) '()]
+#|
+Nombre: orden_by_score
+
+Descripción:  Ordena una lista con jugadores, puede incluir el crupier, según su puntaje. Utiliza el 
+              método de ordenamiento quicksort.
+
+Entradas:     * players -> lista jugadores a ordenar, puede estar incluido el crupier.
+
+Salidas: lista con los jugadores ordenados por su puntaje.
+|#
+(define (orden_by_score players)
+  (cond [ (null? players) '()]
   [else
-    (append (quicksort_cartas (menor_que_cartas (car lista) (cdr lista))) 
-            (list (car lista)) 
-            (quicksort_cartas (mayor_que_cartas (car lista) (cdr lista))))]))
+    (append (orden_by_score (less_than_score (car players) (cdr players))) 
+            (list (car players)) 
+            (orden_by_score (greater_than_score (car players) (cdr players))))]))
+
+
+
+#|
+Nombre: orden_by_cards
+
+Descripción:  Ordena una lista con jugadores, puede incluir el crupier, según su cantidad de cartas. Utiliza el 
+              método de ordenamiento quicksort.
+
+Entradas:     * players -> lista jugadores a ordenar, puede estar incluido el crupier.
+
+Salidas: lista con los jugadores ordenados por su cartas.
+|#
+(define (orden_by_amount_cards players)
+  (cond [ (null? players) '()]
+  [else
+    (append (orden_by_amount_cards (less_than_cards (car players) (cdr players))) 
+            (list (car players)) 
+            (orden_by_amount_cards (greater_than_cards (car players) (cdr players))))]))
 
 
 
