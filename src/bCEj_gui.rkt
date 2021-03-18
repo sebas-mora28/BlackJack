@@ -1,23 +1,50 @@
 #lang racket
 
 (require racket/gui racket/include)
-(include "test.rkt")
+(include "bCEj_logic.rkt")
 
+; Funciones globales
 (define init-players '())
 (define current-game '())
 (define as-value 11)
 (define player-score 0)
 (define current-panel 0)
 
+; Funciones para actualizar las principales variables del juego
+#|
+Nombre: set-players
+Descripción: Actualiza la lista de jugadores al inicio del juego.
+Entradas: player-list -> Lista de jugadores actuales.
+Salidas: Lista actualizada de los jugadores.
+|#
 (define (set-players player-list)
     (set! init-players player-list))
 
+#|
+Nombre: set-current-game 
+Descripción: Inicializa todos los aspectos del juego (mazo, jugadores, crupier y jugador actual).
+Entradas: player-list ->  lista de jugadores al empezar el juego.
+Salidas: Devuelve el mazo de cartas, la lista de jugadores, el crupier y el jugador actual.
+|#
 (define (set-current-game player-list)
     (set! current-game (bCEj player-list)))
 
+#|
+Nombre: set-as-value
+Descripción: Almacena el valor del As (por default vale 11) con el que el jugador pretende un blackjack 
+             o sumar 21.
+Entradas: value -> Valor del as.
+Salidas: Actualiza el valor del As seleccionado por el jugador.
+|#
 (define (set-as-value value)
     (set! as-value value))
 
+#|
+Nombre: place-players
+Descripción: Toma la lista de jugadores y los une en un solo string separados por como.
+Entradas: init-players -> Lista de jugadores al inicio del juego.
+Salidas: String con los jugadores separados por coma.
+|#
 (define (place-players init-players)
     (substring (place-players-aux init-players) 0 (- (string-length (place-players-aux init-players)) 2)))
 
@@ -25,78 +52,106 @@
     (cond [(null? init-players) ""]
           [else (string-append (car init-players) ", " (place-players-aux (cdr init-players)))]))
 
-;; Main function
+; Función principal
+#|
+Nombre: bCEj_gui
+Descripción: Función principal que verifica la lista de jugadores ingresados en la ventana de comandos
+             al iniciar el programa.
+Entradas: player-list -> Lista de jugadores
+Salidas: Informa sobre las restricciones con respecto al número de jugadores y llama a la interfaz si
+         todo está correcto.
+|#
 (define (bCEj_gui . player-list)
     (set-players player-list)
     (cond [(null? init-players) (display "You must enter at least one player's name")]
           [(> (length init-players) 3) (display "The number of players has been exceeded")]
           [else (interface)]))
 
-; Graphic interface for blackjack game
+; Interfaz gráfica
+#|
+Nombre: interface
+Descripción: Maneja el flujo y ejecución de todos los aspectos relacionados con la interfaz del juego.
+Entradas: No tiene entradas.
+Salidas: Interfaz gráfica del juego.
+|#
 (define (interface)
 
-; Start window
+; Ventana de inicio
+#|
+Nombre: start-window
+Descripción: Crea, distribuye y controla todos los elementos de la ventana de inicio, así como el
+             acceso a las demás ventanas.
+Entradas: No tiene entradas.
+Salidas: Primera ventana al inicia el juego.
+|#
 (define start-window 
-    (new frame% [label "Start window"] [min-width 600] [min-height 400]))
+    (new frame% [label "Start window"] [stretchable-width #f] [stretchable-height #f]))
     
-    ; Pane container for start window
+    ; Principal contenedor de la ventana
     (define star-pane
         (new pane% [parent start-window]))
 
-    ; Starup-background for start window
+    ; Fondo principal
     (define starup-background
         (new message% [parent star-pane]
-                      [label (read-bitmap "src/resources/backgrounds/start-bg.jpg")]))
+                      [label (read-bitmap "src/resources/backgrounds/start-bg.png")]))
 
-    ; Start window distribution
+    ; Distribución de la ventana
     (define start-panel
         (new horizontal-panel% [parent star-pane]))
 
     (define left-panel
-        (new vertical-panel% [parent start-panel] [alignment '(center center)] [horiz-margin 10]))
+        (new vertical-panel% [parent start-panel] [alignment '(left center)] [horiz-margin 10]))
+
+    (define center-panel
+        (new horizontal-panel% [parent left-panel] [alignment '(center center)]))
 
     (define right-panel
         (new vertical-panel% [parent start-panel] [alignment '(right top)] [horiz-margin 5] (vert-margin 5)))
 
-    ; Starup menu
+    ; Menú de inicio
     (define text-field
-        (new text-field% [parent left-panel]
+        (new text-field% [parent center-panel]
                          [label "Players name: "]
+                         [horiz-margin 5]
                          [init-value (place-players init-players)]))
 
-    (new button% [parent left-panel]
+    ; Botón para llamar a la ventana de juego
+    (new button% [parent center-panel]
                  [label "Play"]
+                 [min-width 0]
+                 [min-height 0]
                  [callback (λ (b e) (on-play-button (send text-field get-value)))])
 
+    ; Botón para llamar a la ventana de información 
     (new button% [parent right-panel]
                  [label "About"]
-                 [callback (λ (b e) (on-about-button))])
+                 [callback (λ (b e) (about-window))])
 
-; Verify text-field entry before start the game
-(define (on-play-button player-list)
-    (cond [(null? (string-split player-list #rx",")) (error-window "You must enter at least one player's name")]
-          [(> (length (string-split player-list #rx",")) 3) (error-window "The number of players has been exceeded")]
-          [else (set-current-game (string-split player-list #rx",")) (start-game)]))
+    ; Verificar el campo de texto antes de empezar el juego
+    (define (on-play-button player-list)
+        (cond [(null? (string-split player-list #rx",")) (error-window "You must enter at least one player's name")]
+              [(> (length (string-split player-list #rx",")) 3) (error-window "The number of players has been exceeded")]
+              [else (set-current-game (string-split player-list #rx",")) (start-game)]))
+          
 
-;(add-card (card-name (player_deck (current_player current-game)) 0) player-name)           
 
-;-------------------------Create information window------------------------
-
-(define (on-about-button)
-    ; Dialog container to show some game development information 
+; Ventana de información
+#|
+Nombre: about-window
+Descripción: Crea, distribuye y controla todos los elementos de la ventana de información.
+Entradas: No tiene entradas.
+Salidas: Ventana de información.
+|#
+(define (about-window)
     (define about-dialog
-        (new dialog% [label "About"] [min-width 210] [min-height 320]))
+        (new dialog% [label "About"] [stretchable-width #f] [stretchable-height #f]))
 
-    ; Pane container for about window
+    ; Principal contenedor de la ventana
     (define about-pane
         (new pane% [parent about-dialog]))
 
-    ; Background for about window
-    (define about-background
-        (new message% [parent about-pane]
-                      [label (read-bitmap "src/resources/backgrounds/about-bg.jpeg")]))
-
-    ; About window distribution
+    ; Distribución de la ventana
     (define about-panel
         (new vertical-panel% [parent about-pane] [alignment '(center center)]))
     
@@ -106,129 +161,213 @@
     (define button-panel
         (new horizontal-panel% [parent about-panel] [alignment '(center bottom)] [vert-margin 5]))
 
-    ; About window content
-    (new message% [parent label-panel] [label "This is a window information"])
+    ; Información del juego y su desarrollo
+    (new message% [parent label-panel]
+                  [label (read-bitmap "src/resources/backgrounds/about-bg.png")])
 
+    ; Botón para regresar a la ventana de inicio
     (new button%  [parent button-panel] [label "Back"] [callback (λ (b e) (send about-dialog show #f))])
 
     (send about-dialog show #t))
 
-;----------------------------Some pop-up menus-------------------------------
-
-; Create error window
+; Algunas ventanas emergentes
+#|
+Nombre: error-window
+Descripción: Ventana que muestra si hubo un error al ingresar el nombre de los jugadores y el número
+             de estos.
+Entradas: msg -> Indica si se aún no se han ingresado jugadores o si se ha excedido el número de estos.
+Salidas: Ventana con mensaje de error en particular.
+|#
 (define (error-window msg)
-    (define error-dialog (new dialog% [parent start-window] [label "Error"]))
-    (new message% [parent error-dialog] [label msg])
-    (new button%  [parent error-dialog]
+    (define error-dialog (new dialog% [parent start-window] [label "Error"] [stretchable-width #f] [stretchable-height #f]))
+    (define pane (new pane% [parent error-dialog]))
+    (new message% [parent pane]
+                  [label (read-bitmap "src/resources/backgrounds/pop-up-bg.jpg")])
+
+    (define panel (new vertical-panel% [parent pane] [alignment '(center center)] [spacing 20]))
+    (new message% [parent panel] [label msg])
+    (new button%  [parent panel]
                   [label "Ok"]
                   [callback (λ (b e) (send error-dialog show #f) (send start-window show #t))])
+
     (send error-dialog show #t))
     
-; Create lost window
+
+#|
+Nombre: lost-window
+Descripción: Ventana que indica si el jugador actual ha perdido, esto es si la suma de las cartas es 
+             mayor a 21.
+Entradas: place -> Lugar donde se colocará la ventana.
+Salidas: Ventana con mensaje que indica que la suma de cartas es mayor a 21.
+|#
 (define (lost-window place)
-    (define lost-dialog (new dialog% [parent place] [label "You lost"]))
-    (new message% [parent lost-dialog] [label "The sum of cards is greater than 21."])
-    (new button%  [parent lost-dialog]
+    (define lost-dialog (new dialog% [parent place] [label "You lost"] [stretchable-width #f] [stretchable-height #f]))
+    (define pane (new pane% [parent lost-dialog]))
+    (new message% [parent pane]
+                  [label (read-bitmap "src/resources/backgrounds/pop-up-bg.jpg")])
+
+    (define panel (new vertical-panel% [parent pane] [alignment '(center center)] [spacing 20]))
+    (new message% [parent panel] 
+                  [label "The sum of cards is greater than 21."])
+    (new button%  [parent panel]
                   [label "Ok"]
                   [callback (λ (b e) (send lost-dialog show #f))])
+
     (send lost-dialog show #t))
 
-; Create automatic stand window
+
+#|
+Nombre: automatic-stand-window
+Descripción: Ventana que indica que el jugador actual podría ganar pues la suma de sus cartas ya es 
+             igual a 21.
+Entradas: place -> Lugar donde se colocará la ventana.
+Salidas: Ventana con mensaje que indica que el jugador actual podría ganar.
+|#
 (define (automatic-stand-window place)
-    (define auto-stand-dialog (new dialog% [parent place] [label "Automatic stand"]))
-    (new message% [parent auto-stand-dialog] [label "The sum of cards equals 21, you may win."])
-    (new button% [parent auto-stand-dialog]
-                 [label "Ok"]
-                 [callback (λ (b e) (send auto-stand-dialog show #f))])
+    (define auto-stand-dialog (new dialog% [parent place] [label "Automatic stand"] [stretchable-width #f] [stretchable-height #f]))
+    (define pane (new pane% [parent auto-stand-dialog]))
+    (new message% [parent pane]
+                      [label (read-bitmap "src/resources/backgrounds/pop-up-bg.jpg")])
+
+    (define panel (new vertical-panel% [parent pane] [alignment '(center center)] [spacing 20]))
+    (new message% [parent panel] 
+                  [label "The sum of cards equals 21, you may win."])
+    (new button%  [parent panel]
+                  [label "Ok"]
+                  [callback (λ (b e) (send auto-stand-dialog show #f))])
+
     (send auto-stand-dialog show #t))
 
-; Create stand window
+
+#|
+Nombre: stand-window
+Descripción: Ventana que le pregunta al jugador actual si está seguro o no de plantarse.
+Entradas: place -> Lugar donde se colocará la ventana.
+          player-stand -> Función para indicar que el jugador actual a decidido plantarse.
+Salidas: Ventana de decisión para confirmar si el jugador está seguro de plantarse.
+|#
 (define (stand-window place player-stand)
-    (define stand-dialog (new dialog% [parent place] [label "Stand"]))
-    (define v-panel (new vertical-panel% [parent stand-dialog] [alignment '(center center)]))
+    (define stand-dialog (new dialog% [parent place] [label "Stand"] [stretchable-width #f] [stretchable-height #f]))
+    (define v-pane (new pane% [parent stand-dialog]))
+    (new message% [parent v-pane]
+                      [label (read-bitmap "src/resources/backgrounds/pop-up-bg.jpg")])
+
+    (define v-panel (new vertical-panel% [parent v-pane] [alignment '(center center)]))
+    (define l-panel (new horizontal-panel% [parent v-panel] [alignment '(center center)]))
     (new message% [parent v-panel] [label "Are you sure you want to stand?"])
+
     (define h-panel (new horizontal-panel% [parent v-panel] [alignment '(center center)]))
-    (new button% [parent h-panel]
-                 [label "Yes"]
+    (new button% [parent h-panel] [label "Yes"]
                  [callback (λ (b e) (send stand-dialog show #f) (player-stand))])
-    (new button% [parent h-panel]
-                 [label "No"]
+    (new button% [parent h-panel] [label "No"]
                  [callback (λ (b e) (send stand-dialog show #f))])
+
     (send stand-dialog show #t))
 
-;--------------------------Create game window----------------------------
+
+#|
+Nombre: blackjack-window
+Descripción: Ventana que indica si el jugador actual ha obtenido un blackjack, esto es si la suma de
+             las cartas es 21 con dos de estas.
+Entradas: place -> Lugar donde se colocará la ventana.
+Salidas: Ventana que indica que el jugador actual ha obtenido un blackjack.
+|#
+(define (blackjack-window place)
+    (define bj-dialog (new dialog% [label "Blackjack"] [stretchable-width #f] [stretchable-height #f]))
+    (define pane (new pane% [parent bj-dialog]))
+    (new message% [parent pane]
+                  [label (read-bitmap "src/resources/backgrounds/blackjack-bg.png")])
+
+    (define panel (new vertical-panel% [parent pane] [alignment '(center bottom)]))
+    (define h1-panel (new horizontal-panel% [parent panel]))
+    (define h2-panel (new horizontal-panel% [parent panel] [alignment '(center bottom)] [vert-margin 20]))
+
+    (new button% [parent h2-panel] [label "Ok"]
+                 [callback (λ (b e) (send bj-dialog show #f))])
+
+    (send bj-dialog show #t))
+
+
+
+; Ventana de juego
+#|
+Nombre: start-game
+Descripción: Crea, distribuye y controla todos los elementos de la ventana de juego.
+Entradas: No tiene entradas.
+Salidas: Ventana de juego.
+|#
 (define (start-game)
     (send start-window show #f)
 
-    ; Make a frame to game window
+    ; Marco de la ventana
     (define game-window
-        (new frame% [parent start-window] [label "BlaCEjack"] [min-width 1200] [min-height 800]))
+        (new frame% [parent start-window] [label "BlaCEjack"] [stretchable-width #f] [stretchable-height #f]))
 
-    ; Functions for game window
+    ; Principales funciones de la ventana
+
+    ; Función que agrega una carta (card) en lugar especificado (place)
     (define (add-card card place)
         (new message% [parent place]
                       [label (read-bitmap (string-append "src/resources/cards/" card))]))
 
+    ; Función que devuelve el string de una carta de un mazo de cartas(card-list), de acuerdo
+    ; con el lugar especificado (pos)
     (define (card-name card-list pos)
         (string-append (string-join (map ~a (list-ref card-list pos)) "") ".png"))
 
+    ; Función que coloca las dos primeras cartas del primer jugador
     (define (init-interface)
-        (display "\nPlayers: ")
-        (display (players current-game))
         (set! current-panel down-panel)
 
-        (play-sound "src/resources/sounds/dieShuffle1.wav" #t)
+        (play-sound "src/resources/sounds/dieShuffle.wav" #t)
 
-        ; Crupier 
-        (add-card (car (shuffle '("BackBlue.png" "BackGreen.png" "BackRed.png"))) up-panel)
-        (add-card (card-name (cadr (crupier current-game)) 1) up-panel)
-
-        ; First player
+        ; Primer jugador
         (add-card (card-name (player_deck (car (players current-game))) 0) down-panel)
         (add-card (card-name (player_deck (car (players current-game))) 1) down-panel))
 
-    ; Pane container for game window
+    ; Principal contenedor de la ventana
     (define game-pane
         (new pane% [parent game-window]))
 
-    ; Background for game window
+    ; Fondo de la ventana
     (define game-background
         (new message% [parent game-pane]
-                      [label (read-bitmap "src/resources/backgrounds/game-bg.jpg")]))
+                      [label (read-bitmap "src/resources/backgrounds/game-bg.png")]))
 
-    ; Game window distribution
+    ; Distribución de la ventana
     (define game-panel
         (new horizontal-panel% [parent game-pane]))
     
     (define left-panel
-        (new vertical-panel% [parent game-panel]))
+        (new vertical-panel% [parent game-panel] [horiz-margin 10] [alignment '(left center)]))
 
     (define center-panel
-        (new vertical-panel% [parent game-panel]))
+        (new vertical-panel% [parent game-panel] [alignment '(center center)]))
 
     (define right-panel
-        (new vertical-panel% [parent game-panel]))
+        (new vertical-panel% [parent game-panel] [alignment '(right center)]))
 
-    ; Focusing on the left panel
-    (define rules-panel
-        (new horizontal-panel% [parent left-panel] [alignment '(center center)]))
+    ; Centrándose en el panel izquierdo
+    (define notes-panel
+        (new horizontal-panel% [parent left-panel] [alignment '(left center)]))
 
-    (new message% [parent rules-panel] [label "Rules: \n\nPlace the rules here..."])
+    (new message% [parent left-panel]
+                  [label (read-bitmap "src/resources/backgrounds/notes.png")])
 
-    (define bottom-panel
-        (new horizontal-panel% [parent left-panel] [alignment '(center bottom)] [vert-margin 5]))
+    (define button-panel
+        (new horizontal-panel% [parent left-panel] [alignment '(left bottom)] [vert-margin 20] [horiz-margin 150]))
 
-    (new button% [parent bottom-panel]
+    (new button% [parent button-panel]
                  [label "Back"]
-                 [callback (λ (b e) (send game-window show #f)
-                                    (send start-window show #t))])
+                 [callback (λ (b e) (send game-window show #f) (send start-window show #t))])
 
-    ; Focusing on the center panel
+    ; Centrándose en el panel del centro
     (define crupier-panel
         (new horizontal-panel% [parent center-panel] [alignment '(left bottom)]))
 
     (new message% [parent crupier-panel] [label "Player: Crupier"])
 
+    ; Lugar donde se posicionan las cartas del crupier
     (define up-panel
         (new horizontal-panel% [parent center-panel] [alignment '(center center)]))
 
@@ -239,6 +378,8 @@
         (new message% [parent player-name-panel] 
         [label (string-append "Player: " (player_name(car (players current-game))))]))
 
+    ; Caja de radio para controlar la selección del valor de As que el jugador decida para la suma
+    ; del mazo de cartas
     (define radio-box
         (new radio-box% [parent center-panel] 
                         [label "As values: "] 
@@ -246,132 +387,229 @@
                         [style '(horizontal)]
                         [callback (λ (b e) (on-radio-box))]))
 
+    ; Función que actualiza el valor del As de acuerdo a la selección del jugador
     (define (on-radio-box)
         (cond [(zero? (send radio-box get-selection)) (set-as-value 11)]
               [else (set-as-value 1)]))
 
+    ; Lugar donde se posicionan las cartas del jugador actual
     (define down-panel
         (new horizontal-panel% [parent center-panel] [alignment '(center center)]))
 
-    (init-interface)
-    ; Agregar función que verifique si el jugador 1 inica ganando
+    ; Primera y segunda carta del Crupier (la primera está boca abajo)
+    (define card-a (new message% 
+            [parent up-panel]
+            [label (read-bitmap (string-append "src/resources/cards/" 
+            (car (shuffle '("BackBlue.png" "BackGreen.png" "BackRed.png")))))]))
 
-    ; Focusing on the right panel
+    (define card-b (new message% 
+            [parent up-panel]
+            [label (read-bitmap (string-append "src/resources/cards/" (card-name (cadr (crupier current-game)) 1)))]))
+
+    (init-interface)
+
+    ; Centrándose en el panel derecho
     (define first-panel
         (new horizontal-panel% [parent right-panel]))
 
     (define v-first-panel
         (new vertical-panel% [parent first-panel] [alignment '(right top)] [vert-margin 5] [horiz-margin 5]))
 
-    (new button% [parent v-first-panel] [label "Volume"] [callback (λ (b e) (on-volume-button b e))])
-    (new button% [parent v-first-panel] [label "Play Again"] [callback (λ (b e)  (on-play-again-button))])
+    (new button% [parent v-first-panel] [label "Play Again"] [callback (λ (b e)  (play-again))])
 
     (define second-panel
-        (new horizontal-panel% [parent right-panel] [alignment '(center center)]))
+        (new horizontal-panel% [parent right-panel] [alignment '(right center)] [horiz-margin 5]))
 
-    (new message% [parent second-panel] [label "Place deck image here..."])
+    (new message% [parent second-panel]
+                  [label (read-bitmap "src/resources/cards/mazo.png")])
 
     (define third-panel
-        (new horizontal-panel% [parent right-panel] [alignment '(center bottom)] [spacing 5] [vert-margin 5]))
+        (new horizontal-panel% [parent right-panel] [alignment '(right bottom)] [spacing 5] [vert-margin 20] [horiz-margin 35]))
 
-    (define hit-button (new button% [parent third-panel] [label "Hit"] [callback (λ (b e) (on-hit-button b e))]))
-    (define stand-button (new button% [parent third-panel] [label "Stand"] [callback (λ (b e) (on-stand-button b e))]))
+    (define hit-button (new button% [parent third-panel] [label "Hit"] [callback (λ (b e) (on-hit-button))]))
+    (define stand-button (new button% [parent third-panel] [label "Stand"] [callback (λ (b e) (on-stand-button))]))
 
-    (define (on-volume-button button event)
-        (display "foo"))
-
-    (define (on-play-again-button)
+    ; Función para volver a empezar el juego
+    (define (play-again)
         (send game-window show #f)
         (interface))
 
-    (define (on-hit-button button event)
+    #|
+    Nombre: on-hit-button
+    Descripción: Función que agrega una carta al mazo de cartas del jugador actual y de ahí determinar 
+                 si perdió (player-lost), si debe plantarse (player-auto-stand) o si el juego ya 
+                 terminó (game-over?).
+    Entradas: No tiene entradas.
+    Salidas: Adición de carta en la interfaz o cambio de jugador.
+    |#
+    (define (on-hit-button)
         (set! current-game (hit current-game (current_player_id current-game)))
         (set! player-score (evaluate_deck (player_deck (current_player current-game)) as-value))
 
-        (play-sound "src/resources/sounds/cardPlace1.wav" #t)
+        (play-sound "src/resources/sounds/cardPlace.wav" #t)
         (add-card (card-name (player_deck (current_player current-game)) 
                   (- (length (player_deck (current_player current-game))) 1)) current-panel)
 
-        (cond [(> player-score 21) (player-lost)]
-              [(= player-score 21) (player-auto-stand)]
+        (cond [(lost? player-score) (player-lost)]
+              [(equal21? player-score) (player-auto-stand)]
               [(game_over? current-game) (final-game)]))
 
+    #|
+    Nombre: player-lost
+    Descripción: Cambia el estado del jugador de "playing" a "lost", muestra una ventana que le indica  
+                 al jugador que perdió y la razón de esto, se llama al siguiente jugador o bien al 
+                 final del juego.
+    Entradas: No tiene entradas.
+    Salidas: Cambio de jugador o final del juego.
+    |#
     (define (player-lost)
         (set! current-game (next_player current-game "lost" player-score))
         (lost-window game-window)
-        (cond [(zero? (current_player_id current-game)) (send hit-button enable #f) (send stand-button enable #f) (display "\nAhora juega el crupier") (game_over? current-game) (final-game)]
+        (cond [(zero? (current_player_id current-game)) (send hit-button enable #f) (send stand-button enable #f) (game_over? current-game) (final-game)]
               [else (send center-panel delete-child current-panel)
                     (send player-label set-label (string-append "Player: " (player_name (current_player current-game))))
                     (new-player (player_name (current_player current-game)))]))
 
+    #|
+    Nombre: player-auto-stand
+    Descripción: Función que hace que el jugador se plante cuando la suma de cartas ya es igual a 21.
+    Entradas: No tiene entradas.
+    Salidas: Se muestra una ventana indicando que el jugador actual podría ganar, se llama al siguiente   
+             jugador o bien al final del juego.
+    |#
     (define (player-auto-stand)
         (set! current-game (stand current-game (current_player_id current-game) player-score))
         (automatic-stand-window game-window)
-        (cond [(zero? (current_player_id current-game)) (send hit-button enable #f) (send stand-button enable #f) (display "\nAhora juega el crupier") (game_over? current-game) (final-game)]
+        (cond [(zero? (current_player_id current-game)) (send hit-button enable #f) (send stand-button enable #f) (game_over? current-game) (final-game)]
               [else (send center-panel delete-child current-panel)
                     (send player-label set-label (string-append "Player: " (player_name (current_player current-game))))
                     (new-player (player_name (current_player current-game)))]))
 
+    #|
+    Nombre: player-stand
+    Descripción: Función que le pregunta al jugador si está seguro o no de plantarse.
+    Entradas: No tiene entradas.
+    Salidas: Posible ventana de blackjack, siguiente jugador, sonido de plantarse o bien el final del  
+             juego.
+    |#
     (define (player-stand)
         (set! player-score (evaluate_deck (player_deck (current_player current-game)) as-value))
+        (cond [(blackjack? player-score (player_deck (current_player current-game))) 
+               (blackjack-window game-window) (play-sound "src/resources/sounds/blackjack.wav" #t)])
         (set! current-game (stand current-game (current_player_id current-game) player-score))
 
-        (play-sound "src/resources/sounds/dieThrow1.wav" #t)
+        (play-sound "src/resources/sounds/dieThrow.wav" #t)
 
-        (cond [(zero? (current_player_id current-game)) (send hit-button enable #f) (send stand-button enable #f) (display "\nAhora juega el crupier")]
+        (cond [(zero? (current_player_id current-game)) (send hit-button enable #f) (send stand-button enable #f)]
               [else (send center-panel delete-child current-panel)
                     (send player-label set-label (string-append "Player: " (player_name (current_player current-game))))
                     (new-player (player_name (current_player current-game)))]))
 
+    #|
+    Nombre: new-player
+    Descripción: Función que coloca las dos primeras cartas de un nuevo jugador cuando el anterior 
+                 haya perdido o haya decidido plantarse.s
+    Entradas: player-name -> Nombre del nuevo jugador.
+    Salidas: Las dos primeras cartas del nuevo jugador.
+    |#
     (define (new-player player-name)
         (define player-name (new horizontal-panel% [parent center-panel] [alignment '(center center)]))
         (add-card (card-name (player_deck (current_player current-game)) 0) player-name)
         (add-card (card-name (player_deck (current_player current-game)) 1) player-name)
         (set! current-panel player-name))
 
-    (define (on-stand-button button event)
+    #|
+    Nombre: on-stand-button
+    Descripción: Función que controla la decisión del jugador de plantarse o no.
+    Entradas: No tiene entradas.
+    Salidas: Nuevo jugador o el final del juego
+    |#
+    (define (on-stand-button)
         (stand-window game-window player-stand)
         (cond [(game_over? current-game) (final-game)]))
 
+    #|
+    Nombre: final-game
+    Descripción: Función que controla el final del juego, esto es cuando todos los jugadores hayan
+                 jugado y empieza a jugar el crupier. muestra todas las cartas del crupier y una    
+                 ventana de las posiciones de los jugadores de acuerdo a la suma de sus cartas y el 
+                 valor que sea igual o esté más cercano al 21.
+    Entradas: No tiene entradas.
+    Salidas: Cartas del crupier y ventana con la tabla de posiciones de los jugadores y el crupier.
+    |#
     (define (final-game)
-        (display "\nLista final de los jugadores: ")
-        (display (players current-game))
-        (display "\nMazo del crupier: ")
-        (display (crupier current-game))
-        (display "\nEl los ganadores son:")
-        (display (winners current-game))
-        (winner-window (winners current-game))
-        )
+        (send up-panel delete-child card-a)
+        (send up-panel delete-child card-b)
 
-    ; Create winners window
+        (place-crupier-cards (player_deck (crupier current-game)))
+        (winner-window (game_positions current-game)))
+
+    #|
+    Nombre: place-crupier-cards
+    Descripción: Coloca todas las cartas del crupier una vez que este haya empezado a jugar.
+    Entradas: deck -> Mazo de cartas del crupier.
+    Salidas: Cartas del crupier en la interfaz.
+    |#
+    (define (place-crupier-cards deck)
+        (cond [(not (null? deck)) 
+               (add-card (string-append (string-join (map ~a (car deck)) "") ".png") up-panel) 
+               (place-crupier-cards (cdr deck))]))
+
+    #|
+    Nombre: winner-window
+    Descripción: Ventana que muestra una tabla de posiciones junto con las cartas de los jugadores y
+                 el crupier una vez que el juego haya terminado.
+    Entradas: winner-list -> Lista ordenada de las posiciones de los jugadores y el crupier.
+    Salidas: Ventana de posiciones al finalizar el juego.
+    |#
     (define (winner-window winner-list)
-        (define winner-dialog (new dialog% [parent game-window] [label "Winner"] [min-width 250] [min-height 150]))
-        (define v-panel (new vertical-panel% [parent winner-dialog] [alignment '(center center)]))
+        (define winner-dialog (new dialog% [parent game-window] [label "Winner"]))
+        (define w-pane (new pane% [parent winner-dialog]))
+        (new message% [parent w-pane]
+                      [label (read-bitmap "src/resources/backgrounds/winner-bg.png")])
 
-        (cond [(null? winner-list) (new message% [parent v-panel] [label "Anyone's won"] [vert-margin 50])]            
-            [else (place-winner v-panel winner-list)])
+        (define v-panel (new vertical-panel% [parent w-pane] [alignment '(center center)]))
+        (place-winner v-panel winner-list)
+        (define h-panel (new horizontal-panel% [parent v-panel] [alignment '(center center)]))
 
-        (define h-panel (new horizontal-panel% [parent v-panel] [alignment '(center center)] [vert-margin 5]))
-        (new button% [parent h-panel] [label "Play Again"] [callback (λ (b e) (send winner-dialog show #f) (on-play-again-button))])
+        (new button% [parent h-panel] [label "Play Again"] [callback (λ (b e) (send winner-dialog show #f) (play-again))])
         (new button% [parent h-panel] [label "Exit"] [callback (λ (b e) (send winner-dialog show #f) (send game-window show #f))])
     
         (send winner-dialog show #t))
 
+    #|
+    Nombre: place-winner
+    Descripción: Función que toma el nombre, el puntaje y las cartas de cada jugador y las coloca en
+                 la ventana de ganadores en forma de tabala.
+    Entradas: panel -> Lugar donde se colocará el jugador.  
+              winner-list -> Lista ordenada de las posiciones de los jugadores y el crupier.
+    Salidas: Posicionamiento de todos los jugadores y el crupier de forma ordenada en la ventana de         
+             ganadores.
+    |#
     (define (place-winner panel winner-list)
         (cond [(not (null? winner-list)) 
            (place-winner-aux panel (car winner-list)) 
            (place-winner panel (cdr winner-list))]))
 
     (define (place-winner-aux panel player)
-        (cond [(equal? (car player) "crupier") 
-           (define (car player) (new horizontal-panel% [parent panel] [alignment '(center center)] [horiz-margin 20]))
-           (new message% [parent (car player)] [vert-margin 5] [label (string-append "\n" (~a (player_name player)) " win, score: " (~a (player_score player)) "\n")])
+        (cond [(equal? (car player) "Crupier") 
+           (define (car player) (new horizontal-panel% [parent panel] [alignment '(center center)]))
+           (new message% [parent (car player)] [label (string-append "\nPlayer: " (~a (player_name player)) ", score: " (~a (player_score player)) "\n")])
            (place-cards (car player) (player_deck player) 0)]
         
-          [else (define (car player) (new horizontal-panel% [parent panel] [alignment '(center center)] [horiz-margin 20]))
-           (new message% [parent (car player)] [label (string-append "\n" (~a (player_name player)) " win, score: " (~a (player_score player)) "\n")])
+          [else (define (car player) (new horizontal-panel% [parent panel] [alignment '(center center)]))
+           (new message% [parent (car player)] [label (string-append "\nPlayer: " (~a (player_name player)) ", score: " (~a (player_score player)) "\n")])
            (place-cards (car player) (player_deck player) 0)]))
 
+    #|
+    Nombre: place-cards
+    Descripción: Función que coloca las cartas del jugador o el crupier en la ventana de ganadores
+                 según corresponda.
+    Entradas: panel -> Lugar donde se colocarán las cartas del jugador o del crupier.
+              deck -> Mazo de cartas del jugador o del crupier.
+              n-cards -> Número de cartas del mazo. 
+    Salidas: Cartas de cada jugador o el crupier.
+    |#
     (define (place-cards panel deck n-cards)
         (cond [(not (equal? n-cards (length deck)))
            (add-card (card-name deck n-cards) panel)
