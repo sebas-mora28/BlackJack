@@ -723,6 +723,21 @@ Salidas: true en caso de que el puntaje sea igual a 21, false en caso contrario.
 
 
 
+#|
+Nombre: blackjack?
+
+Descripción:  Verifica si el puntaje de un jugador es igual a 21 y tiene dos cartas en su baraja, es decir, tiene un blackjack. 
+
+Entradas:     * player_score -> puntaje del jugador
+              * deck -> baraja del jugador
+
+Salidas: true en caso de que el puntaje sea igual a 21 y tenga dos cartas, false en caso contrario.  
+|#
+(define (blackjack? player_score deck)
+    (and (> player_score 21) (= (length deck) 2)))
+
+
+
 
 #|
 Nombre: set_initial_cards
