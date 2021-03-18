@@ -710,7 +710,7 @@ Salidas: true en caso de que el puntaje sume más de 21, false en caso contrario
 
 
 #|
-Nombre: lost?
+Nombre: blackjack?
 
 Descripción:  Verifica si el puntaje de un jugador es igual a 21, es decir, tiene un blackjack. 
 
