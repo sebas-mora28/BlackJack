@@ -661,12 +661,12 @@ Salidas: lista del crupier con la baraja, estado y puntaje actualizado.
                 (cond   [(lost? (evaluate_deck (player_deck (crupier  game_info)) 1)) 
                                 (update_crupier_score_and_state (crupier game_info) "lost" (evaluate_deck (player_deck (crupier  game_info)) 1))]
 
-                        [(blackjack? (evaluate_deck (player_deck (crupier game_info)) 1)) 
+                        [(equal21? (evaluate_deck (player_deck (crupier game_info)) 1)) 
                                 (update_crupier_score_and_state (crupier game_info) "stand" 21)]
 
                         [else (crupier_next_move game_info (evaluate_deck (player_deck (crupier game_info)) 1))])]
 
-            [(blackjack? (evaluate_deck (player_deck (crupier game_info)) 11))
+            [(equal21? (evaluate_deck (player_deck (crupier game_info)) 11))
                (update_crupier_score_and_state (crupier game_info) "stand" 21)]
                
             [else (crupier_next_move game_info (evaluate_deck (player_deck (crupier game_info)) 11))]))
