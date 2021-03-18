@@ -1,6 +1,5 @@
 
 
-
 #|
 Nombre: init_crupier
 
@@ -311,7 +310,7 @@ Entradas:     * losers -> lista con los jugadores que perdieron durante la parti
 Salidas: lista actualizada con el nuevo elemento
 |#
 (define (ord_losers losers)
-    (orden_by_score losers))
+    (orden_by_score (orden_by_amount_cards losers)))
 
 
 
@@ -371,7 +370,7 @@ Salidas: lista con los jugadores que tienen un puntaje menor que el pivote.
   [(>= (player_score (car players)) (player_score pivot)) (less_than_score pivot (cdr players))]
   
   [else 
-    (cons (carplayers) (less_than_score pivot (cdr players)))]))
+    (cons (car players) (less_than_score pivot (cdr players)))]))
 
 #|
 Nombre: less_than_cards
@@ -385,7 +384,7 @@ Salidas: lista con los jugadores que tienen una cantidad de cartas menor que el 
 (define (less_than_cards pivot players)
   (cond [(null? players) '()]
   
-  [(>= (length (player_deck (car lista))) (length (player_deck pivot))) (less_than_cards pivot (cdr players))]
+  [(>= (length (player_deck (car players))) (length (player_deck pivot))) (less_than_cards pivot (cdr players))]
   
   [else 
     (cons (car players) (less_than_cards pivot (cdr players)))]))
@@ -658,16 +657,16 @@ Salidas: lista del crupier con la baraja, estado y puntaje actualizado.
 |#
 
 (define (start_crupier game_info)
-    (cond   [(> (evaluate_deck (player_deck (crupier  game_info)) 11) 21)
-                (cond   [(> (evaluate_deck (player_deck (crupier  game_info)) 1) 21) 
+    (cond   [(lost? (evaluate_deck (player_deck (crupier  game_info)) 11))
+                (cond   [(lost? (evaluate_deck (player_deck (crupier  game_info)) 1)) 
                                 (update_crupier_score_and_state (crupier game_info) "lost" (evaluate_deck (player_deck (crupier  game_info)) 1))]
 
-                        [(= (evaluate_deck (player_deck (crupier game_info)) 1) 21) 
+                        [(blackjack? (evaluate_deck (player_deck (crupier game_info)) 1)) 
                                 (update_crupier_score_and_state (crupier game_info) "stand" 21)]
 
                         [else (crupier_next_move game_info (evaluate_deck (player_deck (crupier game_info)) 1))])]
 
-            [(= (evaluate_deck (player_deck (crupier game_info)) 11) 21)
+            [(blackjack? (evaluate_deck (player_deck (crupier game_info)) 11))
                (update_crupier_score_and_state (crupier game_info) "stand" 21)]
                
             [else (crupier_next_move game_info (evaluate_deck (player_deck (crupier game_info)) 11))]))
@@ -693,6 +692,36 @@ Salidas: lista del crupier actulizada.
         (start_crupier (hit game_info 0))]))
 
 ;----------------------- general functionality -----------------------------
+
+
+#|
+Nombre: lost?
+
+Descripción:  Verifica si el puntaje de un jugador supera la cantidad de 21. 
+
+Entradas:     * player_score -> puntaje del jugador
+
+Salidas: true en caso de que el puntaje sume más de 21, false en caso contrario.  
+|#
+(define (lost? player_score)
+    (> player_score 21))
+
+
+
+
+#|
+Nombre: lost?
+
+Descripción:  Verifica si el puntaje de un jugador es igual a 21, es decir, tiene un blackjack. 
+
+Entradas:     * player_score -> puntaje del jugador
+
+Salidas: true en caso de que el puntaje sea igual a 21, false en caso contrario.  
+|#
+(define (blackjack? player_score)
+    (= player_score 21))
+
+
 
 
 #|
@@ -793,4 +822,5 @@ Salidas: lista con la información de la partida.
 |#
 (define (bCEj players)
     (set_initial_cards (shuffle_deck (list (create_deck) (list_players  players) (init_crupier) 1))))
+
 
