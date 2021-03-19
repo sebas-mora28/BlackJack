@@ -734,7 +734,7 @@ Entradas:     * player_score -> puntaje del jugador
 Salidas: true en caso de que el puntaje sea igual a 21 y tenga dos cartas, false en caso contrario.  
 |#
 (define (blackjack? player_score deck)
-    (and (> player_score 21) (= (length deck) 2)))
+    (and (= player_score 21) (= (length deck) 2)))
 
 
 
