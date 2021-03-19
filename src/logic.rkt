@@ -91,7 +91,7 @@ Descripción:  Devuelve la lista de jugadores de la lista que contiene la inform
 
 Entradas:     * game_info -> lista con la información actual de la partida.     
 
-Salidas: lista que contiene a cada uno de los jugadorses de la partida. 
+Salidas: lista que contiene a cada uno de los jugadores de la partida. 
 |#
 (define (players game_info) (cadr game_info))
 
@@ -249,7 +249,7 @@ Nombre: add
 
 Descripción:  Agrega un elemento al final de una lista
 
-Entradas:     * lista -> lista a la cual se desea agrega el elemento 
+Entradas:     * lista -> lista a la cual se desea agregar el elemento 
               * elem -> elemento que se desea agregar
 
 Salidas: lista actualizada con el nuevo elemento
@@ -495,6 +495,18 @@ Salidas: lista de jugadores actualizada.
         (cons (car players) (update_player_score_and_state (cdr players) id new_state score))]))
 
 
+
+#|
+Nombre: update_crupier_score_and_state 
+
+Descripción:  Esta funcion se encarga de actualizar el estado y el puntaje del crupier.
+
+Entradas:     * crupier -> lista del crupier.
+              * new_state -> nuevo estado del crupier.
+              * score -> puntaje del crupier. 
+
+Salidas: lista del crupier actualizada. 
+|#
 (define (update_crupier_score_and_state crupier new_state score) 
         (list (player_name crupier) (player_deck crupier) 0 new_state score))
 
@@ -682,7 +694,7 @@ Descripción:  Esta función complementa la función start_crupier. Se encarga c
 Entradas:     * game_info -> lista con la información actual de la partida
               * score -> puntaje actual de la baraja del crupier 
 
-Salidas: lista del crupier actulizada.
+Salidas: lista del crupier actualizada.
 |#
 (define (crupier_next_move game_info score)
     (cond [(>= score 17) 
