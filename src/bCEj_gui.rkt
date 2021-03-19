@@ -1,7 +1,7 @@
 #lang racket
 
 (require racket/gui racket/include)
-(include "bCEj_logic.rkt")
+(include "logic.rkt")
 
 ; Funciones globales
 (define init-players '())
@@ -27,7 +27,7 @@ Entradas: player-list ->  lista de jugadores al empezar el juego.
 Salidas: Devuelve el mazo de cartas, la lista de jugadores, el crupier y el jugador actual.
 |#
 (define (set-current-game player-list)
-    (set! current-game (bCEj player-list)))
+    (set! current-game (bCEj_logic player-list)))
 
 #|
 Nombre: set-as-value
@@ -54,14 +54,14 @@ Salidas: String con los jugadores separados por coma.
 
 ; Función principal
 #|
-Nombre: bCEj_gui
+Nombre: bCEj
 Descripción: Función principal que verifica la lista de jugadores ingresados en la ventana de comandos
              al iniciar el programa.
 Entradas: player-list -> Lista de jugadores
 Salidas: Informa sobre las restricciones con respecto al número de jugadores y llama a la interfaz si
          todo está correcto.
 |#
-(define (bCEj_gui . player-list)
+(define (bCEj player-list)
     (set-players player-list)
     (cond [(null? init-players) (display "You must enter at least one player's name")]
           [(> (length init-players) 3) (display "The number of players has been exceeded")]
@@ -301,7 +301,7 @@ Salidas: Ventana de juego.
 
     ; Marco de la ventana
     (define game-window
-        (new frame% [parent start-window] [label "BlaCEjack"] [stretchable-width #f] [stretchable-height #f]))
+        (new frame% [parent start-window] [label "BlaCEJack"] [stretchable-width #f] [stretchable-height #f]))
 
     ; Principales funciones de la ventana
 
@@ -495,7 +495,7 @@ Salidas: Ventana de juego.
     (define (player-stand)
         (set! player-score (evaluate_deck (player_deck (current_player current-game)) as-value))
         (cond [(blackjack? player-score (player_deck (current_player current-game))) 
-               (blackjack-window game-window) (play-sound "src/resources/sounds/blackjack.wav" #t)])
+               (play-sound "src/resources/sounds/blackjack.wav" #t) (blackjack-window game-window)])
         (set! current-game (stand current-game (current_player_id current-game) player-score))
 
         (play-sound "src/resources/sounds/dieThrow.wav" #t)
@@ -621,4 +621,4 @@ Salidas: Ventana de juego.
     (send start-window show #t)
 )
 
-(bCEj_gui "Pedro" "Carlos" "Juan")
+

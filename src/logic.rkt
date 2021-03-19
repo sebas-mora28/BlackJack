@@ -835,7 +835,7 @@ Entradas:     *players-> lista con los nombres de los jugadores de la partida
 
 Salidas: lista con la información de la partida. 
 |#
-(define (bCEj players)
+(define (bCEj_logic players)
     (set_initial_cards (shuffle_deck (list (create_deck) (list_players  players) (init_crupier) 1))))
 
 
